@@ -1,0 +1,290 @@
+\section{Použité technológie a prostredie}
+\subsection{OpenCV}
+\acrfull{OpenCV} bola pôvodne vydávaná firmou Intel, neskôr výskumným centrom Willow Garage, ktoré vyvíja open source softvér pre aplikácie na poli robotiky. Podporuje frameworky TesorFlow, Torch/PyTorch, Caffe. Knižnica je vydávaná pod BSD licenciou, čo umožňuje jej komerčné používanie. Táto knižnica obsahuje množstvo nástrojov a algoritmov na rozpoznávanie gest, identifikáciu objektov, segmentáciu a rozpoznávanie, spájanie obrazov, sledovanie pohybu, taktiež je vhodná pre implementáciu rozšírenej reality a strojového učenia. OpenCV je podporované v jazykoch C++, Python, Java, C a Matlab. Vývoj je umožnený na operačných systémov Windows, Android, Linux a Mac. \cite{c4}
+
+
+\subsection{FFmpeg}
+Táto knižnica je voľný softvorévý projekt určený na manipulovanie (kódovanie, dekódovanie, multiplexovanie, prehrávanie a streamovanie) s multimediálnymi súbormi. Má voľnú licenciu GNU (General Public License). Výhodou práce s knižnicou FFmpeg je jej rýchlosť a kvalita výstupných dát. Knižnicu využíva aj OpenCV pre spracovanie a distribuovanie obrazovej sekvencie. Obsahuje nástroje na zmenu kvality videa, strihanie, čo napomáha pri kontextovej analýze obrazu.\cite{c9}
+
+\subsection{Python}
+Programovací jazyk Python je interpretovaný vysokoúrovňový jazyk, vytvorený v roku 1991. Jeho využitie je široké, od vývoja webových aplikácii, backendu, frontendu cez vedecké a numerické výpočty, tvorbu grafických rozhraní, vývoj softvéru a výučbu a tvorbu biznis aplikácií. V súčasnosti má širokú podporu u programátorov, čo sa odráža aj na prehľadnom zdokumentovaní. Je to open source softvér s množstvom štandardných knižníc, ktoré majú široké využitie v automatizácii, multimédiách, spracovaní obrazu, textu a ďalších sférach IT.\cite{c6}
+\subsection{Scikit a Numpy}
+
+\subsubsection{Scikit}
+Scikit-learn je knižnica s otvoreným zdrojovým kódom pre strojové učenie pre programovací jazyk Python. Scikit je napísaný v jazyku Python s niektorými algoritmami písanými v Cythone pre zvýšenie výkonu tejto knižnice. Obsahuje rôzne klasifikačné, regresné a zhlukovacie algoritmy, taktiež na modelovanie dát (krížová validácia, výber príznakov, clustering a iné. Je navrhnutá na spoluprácu s numerickou knižnicou NumPy a vedeckou knižnicou SciPy. \cite{c5}
+
+\subsubsection{NumPy}
+NumPy je rozšírenie do Pythonu, ktoré nám umožňuje rýchle a efektívne vykonávanie operácií nad poľami homogénnych dát. NumPy pole je multidimenzionálne pole objektov ktoré majú všetky rovnaký typ. V pamäti sa nachádza ako objekt, ktorý smeruje na blok pamäte, ktorý drží informáciu o type údajov v pamäti, počet dimenzií pamäte, veľkosť každej dimenzie a taktiež aj vzdialenosti medzi jednotlivými prvkami pozdĺž každej z osí. Narozdiel od klasického zoznamu, ktorý je implementovaný ako zoznam smerníkov je prehľadávanie NumPy poľa rýchlejšie. klasický zoznam potrebuje na iteráciu poľa prístup cez dva smerníky, čo predĺžuje čas prehľadávania.\cite{c8}
+
+
+\section{Princíp spracovania obrazu a databázy}
+V prvej časti tejto práce si predstavíme a zároveň porovnáme metódy, ktoré sme zvažovali pri riešení nášho problému. Takisto si zhrnieme aké databázy pohybov máme k dispozícii pre potreby tejto práce, typy databáz, dĺžky jednotlivých videí, vlastnosti a aké druhy aktivít sa v týchto videách nachádzajú. Taktiež je potrebné predstaviť metodológiu spracovania údajov pre zachytenie vhodných vlastností videa na rozpoznanie.
+
+\subsection{Spôsob spracovania sekvencie}
+Zo zadania vyplýva, že pre získanie príznakov z videa budeme potrebovať videosekvenciu rozdeliť na menšie časti, respektíve ju spracovať do formátu obrázku (.jpg, .png. alebo iné). Jednotlivé snímky z videa sú potrebné na hlbšiu analýzu. Podľa zvoleného datasetu budeme môcť zvoliť či budeme používať celú videosekvenciu, alebo iba jej časť, v ktorej je zrejmý druh pohybu. V jednotlivých triedach videí bude potrebné hľadať spoločné a rozdielne znaky na to, aby sme následne vybrali vhodný postup na spracovanie z získanie vhdných príznakov. Knižnica OpenCV neobsahuje metódy ktoré zabezpečia čítanie a prenos obrazu, avšak jej metódy využívajú funkcionalitu ďalšej knižnice FFmpeg, ktorá distribuuje prostredníctvom rozhrania jednotlivé obrazové snímky. 
+
+\subsubsection{Získanie časovo-priestorových vzťahov}
+Bude potrebné získať tieto vzťahy na porovnávanie s ďalšími videami, teda určenie vhodného spôsobu na získanie týchto vzťahov. Jedným zo spôsobov je napríklad algoritmus MHI (Motion History Image), ktorý nám môže zabezpečiť tieto príznaky z videa uložiť a ďalej spracovávať. Podľa tohto algoritmu by sme vedeli určiť odkiaľ kam sa aktér z videa pohyboval, akým spôsobom a rýchlosťou, čo môžme považovať za prvé vhodné príznaky pre určenie typu pohybu.\cite{c3} Tento algoritmus si bližšie popíšeme ďalej v tejto práci.
+
+\subsubsection{Extrakcia príznakov}
+Extrakcia príznakov je dôležitou časťou pre natrénovanie klasifikátora. Preto je potrebné vybrať príznaky, ktoré nám s čo najvyššou presnosťou zadefinujú konkrétny pohyb, ktorý sa bude vykonávať vo videu. Mali by to byť príznaky, ktoré sú jednoznačné a jedinečné pre každý z druhov pohybu. Preto musíme uvažovať vhodnú metódu extrahovania príznakov, aby sme zaistili diverzitu medzi triedami jednotlivých typov pohybu.  Tieto príznaky budeme extrahovať z predspracovaného zdroja a ukladať na disk pre natrénovanie klasifikátora, prípadne viacnásobné trénovanie a testovanie bude vhodné jednotlivé výsledky ukladať pre neskoršie porovnanie.
+
+\subsubsection{Návrh klasifikátora}
+Po úspešnom získaní príznakov z každej videosekvencie bude potrebné natrénovať klasifikátor tak, aby nám každá skupina spracovaných videozáznamov spadala do jednej triedy. Takto natrénovaný klasifikátor budeme potrebovať uložiť pre potreby testovania a porovnávania výsledkov a diverzity jednotlivých skupín. Zároveň budeme potrebovať zvoliť vhodný pomer dát na testovanie a tréning na základe Datábáz, ktoré budeme mať k dispozícii. Z tohto dôvodu budeme potrebovať čo najviac videí, aby bol návrh klasifikačnej metódy čo najpresnejší.
+
+
+\subsection{Databázy videí}
+Na internete je veľké množstvo video databáz s rôznymi pohybmi objektov, ľudí a zvierat.
+Výber databázy realizujeme na základe vlastností jednotlivých videí. Videá môžu byť snímané staticky z jedného miesta bez pohybu kamery, staticky s otáčaním kamery, taktiež dynamicky s rôznym pohybom a otáčaním kamery. Výber databázy bude najdôležitejšou súčasťou tejto práce, keďže od nej sa bude odvíjať celý ďalší postup.
+\subsubsection{Vlastnosti videa} Dôležitými vlastnosťami videí z databáz sú:
+\begin{itemize}
+\item \textbf{veľkosť}
+\item \textbf{rozlíšenie}
+\item \textbf{dĺžka}
+\item \textbf{počet videí}
+\item \textbf{spôsob snímania}
+\item \textbf{formát videa}
+\item \textbf{počet objektov}
+\end{itemize}
+
+\textbf{Veľkosť} videa ovplyvňuje vo vysokej miere časový úsek určený na spracovanie videa. Z tohto dôvodu je vhodné hľadať databázy videí, ktorých videá majú menšiu veľkosť, čo priamo súvisí s ich rozlíšením, počtom snímkov za sekundu a dĺžkou. Nesmieme ale zabudnúť na to, že video musí byť zreteľné a pohyb detekovateľný.
+
+\textbf{Rozlíšenie} videa je dôležitým faktorom pre spracovnie z hľadiska kvality príznakov a snímkov. Zároveň jeho odporúčaná veľkosť sa líši od konkrétneho spôsobu extrakcie príznakov. Dôležité je, aby obraz konkrétnej aktivity na videu bol jasný a voľným okom rozpoznateľný.
+
+\textbf{Dĺžka} sekvencie sa líši od rozmanitosti jednotlivých pohybov osoby. Niektoré databázy obsahujú videosekvencie s opakovaním pohybov, teda dĺžka videí v týchto databázach je väčšia ako v tam, kde je daná aktivita alebo pohyb zachovaný bez opakovania.
+
+\textbf{Počet videí} môže ovplyvniť výsledok a efektivitu rozpoznávania aktivít. Niektoré databázy obsahujú malé množstvo videí pre jeden konkrétny pohyb (okolo 10 až 20), iné zdroje videosekvencií ich majú aj viac ako 50 pre jeden typ pohybu.
+
+\textbf{Spôsob snímania} v rozpoznávaní pohybu je dôležitou vlastnosťou, keďže nie všetky spôsoby riešenia je možné aplikovať na videá s pohybujúcou sa kamerou a opačne. 
+
+\textbf{Formát videa} súvisí s jeho veľkosťou, avšak formát je možné meniť a konvertovať na nami potrebný rozmer.
+
+\textbf{Počet objektov}, ktoré sa na videu pohybujú a vyhodnocujú vplýva na výkon a rýchlosť rozpoznávania. Tu taktiež nie je možné aplikovať niektoré metódy rozpoznávania.
+
+\subsubsection{Databázy ľudského pohybu}
+Pre potrebu rozpoznávania pohybu osoby existuje viacero databáz, ktoré sme v našej práci uvažovali a testovali:
+\begin{itemize}
+\item \textbf{HMDB51}
+\item \textbf{KTH}
+\item \textbf{UCF-Sports}
+\item \textbf{Hollywood}
+\item \textbf{MSR Action I, II}
+\item \textbf{IXMAS}
+\item \textbf{WEIZMANN}
+\end{itemize}
+
+\textbf{HMDB51} je databáza pohybov v ktorej sa nachádza 51 tried pohybu a gestikulácie ako napríklad česanie vlasov, žuvanie, lezenie, potápanie, chôdza atď. Celkovo obsahuje 6849 videí s rozlíšením 320 x 240 pixelov. Videá sú so statickou aj dynamickou kamerou. Zdrojom videí je YouTube ako aj iné verejne dostupné databázy videí. Videá sú špecifické vysokou diverzitou kvality ako aj pohybu.\cite{c1}
+
+\textbf{KTH} pohybová databáza so šiestimi triedami - chôdza, pomalý beh, beh, boxovanie, kývanie rukou, tlieskanie. V každej z týchto tried sa nachádza 100 čiernobielych videí s rozlíšením 160 x 120 pixelov so statickou kamerou. Videá sú natočené v interiéri ako aj exterieri. \cite{c1}
+
+\textbf{UCF-Sports} obsahuje 9 tried pohybu so 182 videami so statickou aj dynamickou kamerou. Rozlíšenie videí je 720 x 480 pixelov. Videá sú z rôznych športových podujatí vysielaných v televízii - skok do vody, vzpieranie, jazda na koni a iné.\cite{c1} 
+
+\textbf{Hollywood} databáza obsahuje 8 tried - vystúpenie z vozidla, bozkávanie, postavenie sa, sadnutie si a iné. Nachádza sa tam 430 videí s rozlíšením 300 - 400 x 200 - 300 pixelov s dynamickou kamerou a dynamickým pozadím.\cite{c1}
+
+\textbf{MSR Action I, II} obsahujú 3 triedy pohybu so statickou kamerou a 16-timi videami s  rozlíšením 320 x 240 pixelov. Namodelované videá sú určené na detekciu pohybu, nie jeho rozpoznávanie. Vo videách sa nachádza viac ako jeden pohyb. V pozadí sa objavujú aj iné osoby, prípadne objekty ako auto. \cite{c1}
+
+\textbf{IXMAS} alebo \textit{INRIA Xmas Motion Acquisition Sequences} obsahuje 13 tried s rozlíšením 390 x 291. Pohyb je zaznamenávaný z viacerých statických kamier. \cite{c1}
+
+\textbf{WEIZMANN} obsahuje 10 tried pohybu, celkový počet videí je 90. Obsahujú triedy pohybu ako chôdza, beh, kývanie jednou alebo dvomi rukami, skok na mieste a iné. Videá sú natočené so statickou kamerou a pozadím  v interiéri  s rozlíšením 180 x 144. \cite{c1}
+
+\subsection{Možnosti spracovania obrazu}
+Na získanie príznakov a potrebu klasifikácie pohybu analyzujeme a zvažujeme konkrétne spôsoby spracovania obrazu z videa. Pre tento účel berieme v úvahu algoritmus \acrfull{mhi} na extrakciu prvotných príznakov a následné spracovanie pomocou \acrfull{hog}. Takto získané príznaky by sme následne vedeli natrénovať pomocou \acrfull{svm}. Z natrénovanej SVM vieme otestovať úspešnosť klasifikátora, ktorý sme natrénovali a tým sa dostať ku výsledkom. 
+
+\subsubsection{Motion History Image}
+\acrshort{mhi} je metódou, ktorá je založená na časovej šablóne. Je to jednoduchá metóda avšak robustná, vhodná na reprezentovanie a analýzu pohybu.\cite{c3}  Táto metóda bola prvýkrát popísaná v dokumente ``An appearance-based representation of action'' od Aarona Bobicka a Jamesa W. Davisa.\cite{c2} Rozpoznávanie akcie pomocou MHI patrí do skupiny prispôsobovania šablóny. V MHI sa informácia pohybu v čase spája do jedného obrázku, kde intenzita pixelov je funkciou histórie pohybu na danej pozícii pixelu. MHI sa vypočítava pomocou aktualizačnej funkcie.\ref{MHIeq}
+
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=14cm]{img/MHIeq.jpg}
+  \caption{Funkcia zmeny pixelov v MHI}
+  \label{MHIeq}
+\end{figure}
+
+Táto aktualizačná funkcia je volaná pre každý ďalší snímok, ktorý analyzujeme z videosekvencie. Výsledkom tohto výpočtu je skalárny snímok, v ktorom svetlejšie časti obrázku označujú najnovšie menené pixely a tmavšie sú tie, ktoré boli menené dávnejšie z pohľadu pohybu na videu.
+
+To nám umožňuje zaznamenať pohyb z videa do jediného obrázku, v ktorom je vystihnutý celý priebeh videa alebo jeho časti. Táto technika je vhodná na použitie pri videách so statickou kamerou a pozadím.\cite{c10}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=10cm]{img/MHIclap.jpg}
+  \caption{Motion History image tlieskania}
+  \label{MHIclap}
+\end{figure}
+
+Na obrázku \ref{MHIclap} je príklad spracovaného pohybu z videa do MHI, na ktorom môžme vidieť pohyb tela pri akcii tlieskania.
+
+	 
+
+\subsubsection{Histogram of Oriented Gradients}
+HOG je metóda extrakcie príznakov z obrazu. Extrahuje príznaky z každej časti vstupného obrazu. Snaží sa zachytiť tvar štruktúry v regiónoch pomocou prechodov farieb jednotlivých pixelov. Rozdeľuje obraz na menšie spojené časti (napríklad 8 x 8 pixelov)a tie časti do ešte menších blokov z ktorých sa následne zostavuje histogram. Deskriptor je spojenie týchto histogramov.  Každá z týchto častí  má rovnaký počet orientácií gradientu.  Pre zvýšenie presnosti môžu byť lokálne histogramy normalizované na základe kontrastu a výpočtom miery intenzít naprieč väčšími časťami obrazu, teda bloku. Táto normalizácia vedie k zvýšenej invariantnosti pri zmene osvetlenia alebo tienenia. HOG Deskriptor má výhody v tom, že pôsobí na lokálne bunky, je invariantný voči geometrickým a fotometrickým transformáciám. N. Dalal a B. Triggs zistili, že hrubé priestorové vzorkovanie, jemné vzorkovanie a silná lokálna fotometrická normalizácia umožňujú HOG deskriptoru vhodne detekovať ľudské bytosti v obrazoch. 
+
+\paragraph{Výpočet gradientu}
+
+Základným krokom pri HOG algoritme je výpočet gradientových hodnôt. Najbežnejšou metódou je aplikácia 1-D centrovanej diskrétnej masky v horizontálnom alebo aj vertikálnom smere. Táto metóda vyžaduje filtrovanie farieb alebo intenzitu obraz s filtračnými jadrami.
+
+\paragraph{Histogram orientovaných gradientov}
+Ďalším krokom je vytvorenie histogramu orientovaných gradientov. Každý pixel v bunke pridáva svoju ováhovanú orientáciu pre orientovaný histogramový kanál, ktorý je vytvorený na základe výpočtu gradientov. Bunky môžu byť obdĺžníkového alebo radiálneho tvaru a histogramové kanály sú rozložené rovnomerne od 0 do 180 alebo 0 - 360 stupňov, záleží od toho, či gradienty môžu nadobúdať aj zápornú hodnotu, alebo nie. Podľa výskumov  N. Dalala a B. Triggsa bolo zistené, že najvhodnejší počet kanálov na detekovanie osoby je 9 pri rozsahu 0 - 360 stupňov.
+
+\paragraph{Bloky deskriptorov}
+Na zohľadnenie zmien v osvetlení a kontraste musí byť intenzita gradientu lokálne normalizovaná, čo vyžaduje spoločné zoskupovanie buniek do väčších priestorovo prepojených blokov. HOG Deskriptor je následne spojený vektor komponentov normalizovaných histogramov buniek zo všetkých oblastí blokov. Tieto bloky sa prekrývajú, z čoho vyplýva, že každý jedna bunka prispieva voac ako raz do vytvorenia konečného deskriptora. Existujú dva hlavné tvary blokov:
+
+\begin{itemize}
+\item \textbf{R-HOG} (Rectangular HOG)
+\item \textbf{C-HOG} (Circular HOG)
+\end{itemize}
+
+
+\textbf{R-HOG} - sú štvorcové mriežky reprezentované tromi parametrami:
+\begin{itemize}
+\item počet buniek v bloku
+\item počet pixelov v bunke
+\item počet kanálov na histogram bunky
+\end{itemize}
+
+V práci N. Dalala a B. Triggsa je uvedené, že optimálne parametre sú štyri pixelové bunky s veľkosťou  8 x 8 na jeden blok (16 x 16 pixelov na blok)s deviatimi histogramovými kanálmi. Bolo taktiež zistené, že menšie vylepšenie vo výkonnosti môže byť nadobudnuté použitím Gaussovho priestorového okna v každom bloku pred zaznamenaním váhovaných histogramov. Lepšiemu výsledku by napomohlo to, že okrajové pixely by boli ováhované nižšími hodnotami. 
+
+\textbf{C-HOG} - sú kruhové bloky, ktoré je možné použiť v dvoch variantoch. Jednou variantou je využitie jednej centrálnej bunky, pri druhej variante je táto bunka uhlovo rozdelená do rovnakých častí. Tieto bloky sú popísané štyrmi parametrami:
+
+\begin{itemize}
+\item počet uhlových buniek
+\item počet radiálnych buniek
+\item polomer stredovej bunky
+\item faktor expanzie pre polomer dodatočných radiálnych buniek
+\end{itemize}
+
+Podľa zistení N. Dalala a B. Triggsa najvhodnejšie zvoleným spôsobom je vytvorenie dvoch radiálnych buniek so štyrmi uhlovými bunkami, polomerom stredovej bunky 4 pixely a faktor expanzie s hodotou 2. 
+
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=14cm]{img/HOGimg.png}
+  \caption{R-HOG a C-HOG}
+  \label{HOGimg}
+\end{figure}
+
+Na obrázku \ref{HOGimg} môžme vidieť ako vyzerá rozdelenie obrazu podľa R-HOG a C-HOG.
+
+\paragraph{Normalizácia blokov}
+Sú štyri rôzne spôsoby normalizácie blokov, ktoré sú popísané na obrázku \ref{HOGnorm}.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=14cm]{img/HOGnorm.png}
+  \caption{Metódy normalizácie}
+  \label{HOGnorm}
+\end{figure}
+
+Schéma \textbf{\textit{L2-hys}} môže byť vypočítaná z \textbf{\textit{L2-norm}}, kde sa výsledok renormalizuje pre vektor \textit{v < 0.2}. Všetky štyri normy majú výrazne lepšie výsledky ako nenormalizované dáta. Tieto údaje sú následne použiteľné ako vektor príznakov pre SVM. \cite{c11}
+
+\subsubsection{Support Vector Machine}
+SVM je metóda strojového učenia s učiteľom, je vhodná na používanie pri klasifikácii alebo regresnej analýze. Táto metóda na základe trénovacích vzoriek, ktoré sú priradené do jednej z dvoch tried vytvorí model. Tento model je následne schopný priraďovať nové vzorky do jednej z týchto tried, čo z neho robí nepravdepodobnostný binárne lineárny klasifikátor. SVM model reprezentuje vzorky ako body v priestore, tak, že mapuje jednotlivé vstupy do kategórií, ktoré sú v tomto priestore jasne oddelené. Klasifikátor priraďuje nové vzorky podľa toho, ku ktorej z tried majú bližšie v rámci tohto priestoru.
+
+Okrem lineárnej klasifikácie je SVM schopné efektívne riešiť aj nelineárne separovateľné problémy pomocou takzvaného kernel triku. Pokiaľ dáta nie sú pri trénovaní označené, do ktorej kategórie patria, učenie s učiteľom nie je možné, avšak je možné učenie bez učiteľa tak, že algoritmus sa snaží nájsť prirodzené zoskupenie dát a tak ich rozdeliť do kategórií.
+
+SVM algoritmus vytvorili Hava Siegelmann a Vladimir Vapnik. Tento algoritmus má široké využitie a je používaný v priemyselných aplikáciách, počítačovom videní, umelej inteligencii.  \cite{c7}
+
+\paragraph{Definícia algoritmu}
+SVM vytvára hyperrovinu \footnote{Podpriestor, ktorý má o jednu dimenziu menej ako priestor, v ktorom sa nachádza.}, alebo viacero hyperrovín, vo vysokorozmernom priestore, ktorý môže byť použitý na klasifikáciu, regresiu alebo iné úlohy. Dobrá separácia sa dosiahne vtedy, keď hyperrovina má veľkú vzdialenosť od najbližšieho trénovacieho bodu akejkoľvek triedy. Teda platí, čím je väčšia vzdialenosť hyperroviny od trénovacích údajov, tým je nižšia chyba klasifikátora pri určovaní triedy testovacej vzorky.\cite{c12}
+
+Keďže nie všetky problémy je možné lineárne separovať, bolo navrhnuté, aby sa priestor, ktorý SVM spracováva rozvrhol do viacrozmerného priestoru, čo uľahčí rozdelenie jednotlivých dát do tried. Pre zanechanie výpočtovej rýchlosti je mapovanie v SVM navrhnuté v pôvodnom priestore, kde sa následne zvolí vhodná kernelová funkcia $ k(x,y)$ . 
+Hyperroviny vo viacrozmernom priestore sú definované ako súbory bodov, kde ich vektory majú konštantnú dĺžku. Následne body z proestoru príznakov sú mapované do hyperroviny. 
+
+\paragraph{Lineárny klasifikátor}
+Najjednoduchšou možnosťou použitia SVM je prípad lineárneho klasifikátora pre dáta, ktoré je možné lineárne rozdeliť do dvoch tried pomocou hyperroviny. Príklad takéhoto problému je na obrázku \ref{LinSep}.
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=10cm]{img/linsep.png}
+  \caption{Príklad lineárne separovateľného problému}
+  \label{LinSep}
+\end{figure}
+
+
+\paragraph{Nelineárny klasifikátor}
+Na obrázku č. \ref{SVMobr} môžme vidieť lineárne neseparovateľný problém dvoch množín, ktorý sa po pridaní tretej dimenzie stáva lineárne separovateľný. Takýmto spôsobom dokážeme s SVM zatriediť jednotlivé videá z množín do správnych tried. Transformácia do vyššierozmerného priestoru sa nazýva jadrový trik \textit{(angl. kernel trick)}. Pomocou tohto triku vieme lineárne separovať aj lineárne neseparovateľné problémy.\cite{c12}
+
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=16cm]{img/SVM.png}
+  \caption{Rozšírenie dimenzie v SVM}
+  \label{SVMobr}
+\end{figure}
+
+Medzi najčastejšie používané jadrové funkcie patria:
+
+\begin{itemize}
+\item \textbf{Polynóm stupňa \textit{p}}
+\item $  K(x,y) = (x.y + 1)^p $
+\item \textbf{Radiálne bázové funkcie}
+\item $   K(x,y) = e^{(-\|x-y\|^2/2\sigma^2)}  $
+\item \textbf{Dvojvrstvová neurónová sieť }
+\item $   K(x,y) = \tanh(\kappa x.y - \delta)  $
+\end{itemize}
+
+\section{Návrh riešenia}
+\subsection{Databáza}
+
+
+\subsection{Získanie príznakov}
+
+\subsection{Klasifikácia}
+\noindent Samozrejmosťou bolo nastavenie zapnutia rozšírenia pri štarte, prípadne interval zmeny odosielaných údajov.
+
+\section{Testovanie a porovnanie riešení}
+\noindent Verzia FEIstyle 1.5 používa glossary\footnote{\url{https://www.ctan.org/pkg/glossaries?lang=en}} balík.
+\acrfull{cdma} je dlhá skratka naopak \acrshort{gsm} je skratka v krátkej forme.
+
+
+\subsection{Vzhľad}
+\noindent Dôležitou požiadavkou kladenou na rozšírenie bolo príjemné používateľské rozhranie. Z~tohto dôvodu malo rozšírenie obsahovať zoznam modifikovaných vlastností a tlačidlo pre prístup k nastaveniam rozšírenia v jednoduchej a praktickej forme. Predpokladaný vzhľad je zobrazený na obrázku č. \ref{vzhladobr}.
+\begin{figure}[!htbp]
+  \centering
+  \includegraphics[width=8cm]{img/MHIalg.jpg}
+  \caption{Predpokladaný vzhľad rozšírenia.}
+  \label{vzhladobr}
+\end{figure}	 
+\noindent Dôležitou požiadavkou kladenou na rozšírenie bolo príjemné používateľské rozhranie.\cite{t00} Z~tohto dôvodu malo rozšírenie obsahovať zoznam modifikovaných vlastností a tlačidlo pre prístup k nastaveniam rozšírenia v jednoduchej a praktickej forme. Predpokladaný vzhľad je zobrazený na obrázku č. \ref{vzhladobr}.
+
+\begin{algorithm}
+\scriptsize
+\begin{algorithmic}
+ \STATE <text>
+ \IF{<condition>} \STATE {<text>} \ELSE \STATE{<text>} \ENDIF
+ \IF{<condition>} \STATE {<text>} \ELSIF{<condition>} \STATE{<text>} \ENDIF
+ \FOR{<condition>} \STATE {<text>} \ENDFOR
+ \FOR{<condition> \TO <condition> } \STATE {<text>} \ENDFOR
+ \FORALL{<condition>} \STATE{<text>} \ENDFOR
+ \WHILE{<condition>} \STATE{<text>} \ENDWHILE
+ \REPEAT \STATE{<text>} \UNTIL{<condition>}
+ \LOOP \STATE{<text>} \ENDLOOP
+ \REQUIRE <text>
+ \ENSURE <text>
+ \RETURN <text>
+ \PRINT <text>
+ \COMMENT{<text>}
+ \AND, \OR, \XOR, \NOT, \TO, \TRUE, \FALSE
+\end{algorithmic}
+\caption{Ukážka príkazov pre algorithmic}  
+\label{alg:preview}  
+\end{algorithm}
+
+\begin{lstlisting}[
+  caption={Ukážka algoritmu},
+  label={lst:main-c},
+  language=c
+]
+/* Hello World program */
+
+#include<stdio.h>
+
+struct cpu_info {
+    long unsigned utime, ntime, stime, itime;
+    long unsigned iowtime, irqtime, sirqtime;
+};
+
+main()
+{
+    printf("Hello World");
+}
+\end{lstlisting}
