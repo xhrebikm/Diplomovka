@@ -61,7 +61,7 @@ Výber databázy realizujeme na základe vlastností jednotlivých videí. Vide�
 
 \textbf{Počet objektov}, ktoré sa na videu pohybujú a vyhodnocujú vplýva na výkon a rýchlosť rozpoznávania. Tu taktiež nie je možné aplikovať niektoré metódy rozpoznávania.
 
-\subsubsection{Databázy ľudského pohybu}
+\subsubsection{Databázy ľudského pohybu}\label{dbludskeho}
 Pre potrebu rozpoznávania pohybu osoby existuje viacero databáz, ktoré sme v našej práci uvažovali a testovali:
 \begin{itemize}
 \item \textbf{HMDB51}
@@ -90,7 +90,7 @@ Pre potrebu rozpoznávania pohybu osoby existuje viacero databáz, ktoré sme v 
 \subsection{Možnosti spracovania obrazu}
 Na získanie príznakov a potrebu klasifikácie pohybu analyzujeme a zvažujeme konkrétne spôsoby spracovania obrazu z videa. Pre tento účel berieme v úvahu algoritmus \acrfull{mhi} na extrakciu prvotných príznakov a následné spracovanie pomocou \acrfull{hog}. Takto získané príznaky by sme následne vedeli natrénovať pomocou \acrfull{svm}. Z natrénovanej SVM vieme otestovať úspešnosť klasifikátora, ktorý sme natrénovali a tým sa dostať ku výsledkom. 
 
-\subsubsection{Motion History Image}
+\subsubsection{Motion History Image} \label{MHIlabel}
 \acrshort{mhi} je metódou, ktorá je založená na časovej šablóne. Je to jednoduchá metóda avšak robustná, vhodná na reprezentovanie a analýzu pohybu.\cite{c3}  Táto metóda bola prvýkrát popísaná v dokumente ``An appearance-based representation of action'' od Aarona Bobicka a Jamesa W. Davisa.\cite{c2} Rozpoznávanie akcie pomocou MHI patrí do skupiny prispôsobovania šablóny. V MHI sa informácia pohybu v čase spája do jedného obrázku, kde intenzita pixelov je funkciou histórie pohybu na danej pozícii pixelu. MHI sa vypočítava pomocou aktualizačnej funkcie.\ref{MHIeq}
 
 
@@ -223,13 +223,95 @@ Medzi najčastejšie používané jadrové funkcie patria:
 \end{itemize}
 
 \section{Návrh riešenia}
-\subsection{Databáza}
+Po oboznámení s teoretickými piliermi tejto práce prejdeme ku konkrétnemu riešeniu témy a implementácii, ktorú sa nám podarilo vytvoriť. Postupne prejdeme jednotlivé kroky vytvárania programu od analýzy datasetov, načítavania a ukladania videosekvencií do obrazkových formátov. Ďalej si ukážeme metódy a spôsoby, ktorými sme následne vzniknuté dáta spracovali pre potrebu výberu príznakov a zatriedenia do jednotlivých tried. Fungovanie programu priblížime aj časťami kódu s popisom, na čo slúži a ako pracuje. Súčasťou tejto kapitoly bude aj krátky popis zmien, ktoré sme počas návrhu tejto implementácie vykonali a samozrejme aj ich dopad na finálne riešenie.
+
+\subsection{KTH Databáza}
+Pre naše riešenie sme vyberali z viacerých datasetov, ktoré boli popísané v kapitole \ref{dbludskeho}. Nakoniec sme sa rozhodli pre databázu KTH, v ktorej máme 6 tried pohybu a nachádza sa pri každom z nich 100 videí. Naše rozhodnutie sme učinili takto z viacerých dôvodov. Potrebovali sme dataset, v ktorom sa nachádza veľké množstvo videí, zároveň vo videách sme potrebovali statickú kameru so statickým pozadím, aby sme predišli zvýšenému šumu. V tejto databáze sú pohyby:
+
+\begin{itemize}
+\item Boxovanie
+\item Mávanie rukami
+\item Tlieskanie rukami
+\item Beh
+\item Pomalý beh
+\item Chôdza
+\end{itemize}
+
+Pri analýze snímkov sme zistili, že dĺžka videí je od \textit{\textbf{8 do 59 sekúnd}}. Čo pre dané typy pohybov je postačujúci čas na to, aby sme z nich dokázali extrahovať dôležité informácie, ktoré sa tohto pohybu týkajú.  Počet snímkov za sekundu v každom z videí je 25, z tohto dôvodu sme usúdili, že aj v prípade krátkeho videa s dĺžkou 8 sekúnd budeme mať k dispozícii minimálne \textit{\textbf{200}} snímkov. Ďalším dôležitým faktom je, že sa budeme musieť popasovať s podobnosťou pohybov behu, pomalého behu a chôdze, keďže sú veľmi podobné, a ich rozdiel je iba v rýchlosti vykonávania. Je nutné dodať, že v každom z videí sa jednotlivé typy pohybov opakovali viacnásobne, z čoho sme už vopred usudzovali, že na spracovanie nám bude stačiť iba časť videa, čo nám ušetrí čas spracovania dát počas behu programu. 
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=10cm]{img/KTHdataset.png}
+  \caption{Jednotlivé pohyby v datasete KTH \cite{c14}}
+  \label{KTHobr}
+\end{figure}
+
+Na obrázku \ref{KTHobr} vidíme všetky kategórie pohybov, jednotlivé pohyby vykonáva viacero osôb rôznymi spôsobmi, teda je medzi týmito pohybmi aj diverzita, ktorá je určite vhodná na trénovanie pohybu. 
+
+\subsection{Predspracovanie videa}
+Na predspracovanie videa a vytiahnutie prvotných príznakov sme sa rozhodli z našich videí vytvoriť obrázky, na ktorých sa bude nachádzať história pohybu. Algoritmus MHI, ktorý sme pri tom použili sme popísali v časti \ref{MHIlabel}. Tento algoritmus sme zvolili na základe toho, že máme databázu videí bez pohyblivého pozadia, teda predídeme šumom na pozadí a budeme sa môcť venovať iba pixelom, ktoré menia svoju pozíciu v rámci videa. Presne to je postačujúca podmienka na to, aby sme bez väčších problémov mohli implementovať funkcionalitu algoritmu MHI na nami zvolený dátový rozsah. Vytvoriť MHI sme sa rozhodli zo všetkých videí, aby sme následne videli, akým spôsobom prebehlo spracovanie, či je možné z MHI vyčítať pohyb a jeho základné znaky. 
+
+\begin{lstlisting}[
+  caption={Algoritmus MHI},
+  label={lst:main-c},
+  language=python
+]
+def getImage(cam, video_src, vidDir):
+  while True:    
+    ret, frame = cam.read()
+    h, w = frame.shape[:2]
+    prev_frame = frame.copy()
+    motion_history = np.zeros((h, w), np.float32)
+    timestamp = 0
+    while True:
+      frame_num = frame_num + 1
+      ret, frame = cam.read()
+      if not ret:
+        break
+      frame_diff = cv2.absdiff(frame, prev_frame)
+      gray_diff = cv2.cvtColor(frame_diff, cv2.COLOR_BGR2GRAY)
+      ret, fgmask = cv2.threshold(gray_diff, DEFAULT_THRESHOLD, 1, cv2.THRESH_BINARY)
+      timestamp += 1
+      # update motion history
+      cv2.motempl.updateMotionHistory(fgmask, motion_history, timestamp, MHI_DURATION)
+      # normalize motion history
+      mh = np.uint8(np.clip((motion_history-(timestamp-MHI_DURATION)) / MHI_DURATION, 0, 1)*255)
+      cv2.imshow('motempl', mh)
+      print frame_num
+      if frame_num == 160:
+          frame_num = 0
+          imagename = video_src[0:-4] + '.jpg'
+          cv2.imwrite(MHI_dir + '\\' + vidDir + '\\' + imagename, mh)
+          return
+\end{lstlisting}
 
 
-\subsection{Získanie príznakov}
+V tejto ukážke kódu je celý proces čítania videa a jeho jednotlivých snímkov za sebou so spracovaním na MHI. Funkcia \textit{getImage} obsahuje tri parametre:
+\begin{itemize}
+\item \textbf{cam}
+\item \textbf{video\_src}
+\item \textbf{vidDir}
+\end{itemize}
+
+ \textbf{\textit{cam}}, čo je objekt typu \textit{VideoCapture}, ktorý sa ďalej spracováva po jednotlivých snímkoch. 
+ Parameter \textbf{\textit{video\_src}} je názov videosúboru, ktorý sme použili na uloženie obrázku z videa.
+ \textbf{\textit{vidDir}} je názov priečinku, v ktorom sa obrázok MHI bude ukladať. 
+ Na čítanie snímkov sme použili knižnicu OpenCV, ako aj na spracovanie jednotlivých snímkov do MHI. Dôležitými parametrami, ktoré sme nastavovali boli \textit{frame\_num}, ktorý nám označoval počet prehratých snímkov, pri ktorom sme uložili vyhotovené MHI, ďalej to bol \textit{DEFAULT\_TRESHOLD}, ktorý nám filtroval nepotrebné pixely s veľmi nízkou hodnotou, pri trénovaní a testovaní sme zistili, že hodnota \textit{\textbf{50}} bude dobrá. Akonáhle bol tento parameter vyšší alebo nižší, obrázky už neboli až tak dobre vyhodnocované. Ďalším dôležitým parametrom je \textit{MHI\_DURATION}. Tento parameter nám vymedzuje dĺžku histórie pohybu v jednotke \textit{timestamp}, akú má snímať. čím je hodnota vyššia, tým dlhšia história pohybu je na finálnom MHI zaznamenaná. 
+ Pre naše potreby sme zvolili tento parameter na hodnotu \textit{\textbf{80}}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=8cm]{img/MHIbox.png}
+  \caption{Predspracované videá boxu.}
+  \label{MHIbox}
+\end{figure}  
+Na obrázku \ref{MHIbox} môžme vidieť príklad už predspracovaných MHI prostredníctvom nášho algoritmu. Takto sme si vytvorili všetkých 600 obrázkov z pohybov na ďalší výber príznakov. 
+
+\subsection{Výber príznakov}
 
 \subsection{Klasifikácia}
-\noindent Samozrejmosťou bolo nastavenie zapnutia rozšírenia pri štarte, prípadne interval zmeny odosielaných údajov.
+
+\subsection{Opravy a priebežné testovania}
 
 \section{Testovanie a porovnanie riešení}
 \noindent Verzia FEIstyle 1.5 používa glossary\footnote{\url{https://www.ctan.org/pkg/glossaries?lang=en}} balík.
@@ -269,22 +351,3 @@ Medzi najčastejšie používané jadrové funkcie patria:
 \label{alg:preview}  
 \end{algorithm}
 
-\begin{lstlisting}[
-  caption={Ukážka algoritmu},
-  label={lst:main-c},
-  language=c
-]
-/* Hello World program */
-
-#include<stdio.h>
-
-struct cpu_info {
-    long unsigned utime, ntime, stime, itime;
-    long unsigned iowtime, irqtime, sirqtime;
-};
-
-main()
-{
-    printf("Hello World");
-}
-\end{lstlisting}
