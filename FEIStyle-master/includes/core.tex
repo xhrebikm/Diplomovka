@@ -116,7 +116,7 @@ Na obrázku \ref{MHIclap} je príklad spracovaného pohybu z videa do MHI, na kt
 
 	 
 
-\subsubsection{Histogram of Oriented Gradients}
+\subsubsection{Histogram of Oriented Gradients} \label{HOGlabel}
 HOG je metóda extrakcie príznakov z obrazu. Extrahuje príznaky z každej časti vstupného obrazu. Snaží sa zachytiť tvar štruktúry v regiónoch pomocou prechodov farieb jednotlivých pixelov. Rozdeľuje obraz na menšie spojené časti (napríklad 8 x 8 pixelov)a tie časti do ešte menších blokov z ktorých sa následne zostavuje histogram. Deskriptor je spojenie týchto histogramov.  Každá z týchto častí  má rovnaký počet orientácií gradientu.  Pre zvýšenie presnosti môžu byť lokálne histogramy normalizované na základe kontrastu a výpočtom miery intenzít naprieč väčšími časťami obrazu, teda bloku. Táto normalizácia vedie k zvýšenej invariantnosti pri zmene osvetlenia alebo tienenia. HOG Deskriptor má výhody v tom, že pôsobí na lokálne bunky, je invariantný voči geometrickým a fotometrickým transformáciám. N. Dalal a B. Triggs zistili, že hrubé priestorové vzorkovanie, jemné vzorkovanie a silná lokálna fotometrická normalizácia umožňujú HOG deskriptoru vhodne detekovať ľudské bytosti v obrazoch. 
 
 \paragraph{Výpočet gradientu}
@@ -177,7 +177,7 @@ Sú štyri rôzne spôsoby normalizácie blokov, ktoré sú popísané na obráz
 
 Schéma \textbf{\textit{L2-hys}} môže byť vypočítaná z \textbf{\textit{L2-norm}}, kde sa výsledok renormalizuje pre vektor \textit{v < 0.2}. Všetky štyri normy majú výrazne lepšie výsledky ako nenormalizované dáta. Tieto údaje sú následne použiteľné ako vektor príznakov pre SVM. \cite{c11}
 
-\subsubsection{Support Vector Machine}
+\subsubsection{Support Vector Machine} \label{SVMlabel}
 SVM je metóda strojového učenia s učiteľom, je vhodná na používanie pri klasifikácii alebo regresnej analýze. Táto metóda na základe trénovacích vzoriek, ktoré sú priradené do jednej z dvoch tried vytvorí model. Tento model je následne schopný priraďovať nové vzorky do jednej z týchto tried, čo z neho robí nepravdepodobnostný binárne lineárny klasifikátor. SVM model reprezentuje vzorky ako body v priestore, tak, že mapuje jednotlivé vstupy do kategórií, ktoré sú v tomto priestore jasne oddelené. Klasifikátor priraďuje nové vzorky podľa toho, ku ktorej z tried majú bližšie v rámci tohto priestoru.
 
 Okrem lineárnej klasifikácie je SVM schopné efektívne riešiť aj nelineárne separovateľné problémy pomocou takzvaného kernel triku. Pokiaľ dáta nie sú pri trénovaní označené, do ktorej kategórie patria, učenie s učiteľom nie je možné, avšak je možné učenie bez učiteľa tak, že algoritmus sa snaží nájsť prirodzené zoskupenie dát a tak ich rozdeliť do kategórií.
@@ -253,7 +253,7 @@ Na predspracovanie videa a vytiahnutie prvotných príznakov sme sa rozhodli z n
 
 \begin{lstlisting}[
   caption={Algoritmus MHI},
-  label={lst:main-c},
+  label={MHIcreate},
   language=python
 ]
 def getImage(cam, video_src, vidDir):
@@ -286,14 +286,14 @@ def getImage(cam, video_src, vidDir):
 \end{lstlisting}
 
 
-V tejto ukážke kódu je celý proces čítania videa a jeho jednotlivých snímkov za sebou so spracovaním na MHI. Funkcia \textit{getImage} obsahuje tri parametre:
+V tejto ukážke \ref{MHIcreate} kódu je celý proces čítania videa a jeho jednotlivých snímkov za sebou so spracovaním na MHI. Funkcia \textit{getImage} obsahuje tri vstupné parametre:
 \begin{itemize}
 \item \textbf{cam}
 \item \textbf{video\_src}
 \item \textbf{vidDir}
 \end{itemize}
 
- \textbf{\textit{cam}}, čo je objekt typu \textit{VideoCapture}, ktorý sa ďalej spracováva po jednotlivých snímkoch. 
+ \textbf{\textit{cam}}, čo je objekt typu \textbf{\textit{VideoCapture}}, ktorý sa ďalej spracováva po jednotlivých snímkoch. 
  Parameter \textbf{\textit{video\_src}} je názov videosúboru, ktorý sme použili na uloženie obrázku z videa.
  \textbf{\textit{vidDir}} je názov priečinku, v ktorom sa obrázok MHI bude ukladať. 
  Na čítanie snímkov sme použili knižnicu OpenCV, ako aj na spracovanie jednotlivých snímkov do MHI. Dôležitými parametrami, ktoré sme nastavovali boli \textit{frame\_num}, ktorý nám označoval počet prehratých snímkov, pri ktorom sme uložili vyhotovené MHI, ďalej to bol \textit{DEFAULT\_TRESHOLD}, ktorý nám filtroval nepotrebné pixely s veľmi nízkou hodnotou, pri trénovaní a testovaní sme zistili, že hodnota \textit{\textbf{50}} bude dobrá. Akonáhle bol tento parameter vyšší alebo nižší, obrázky už neboli až tak dobre vyhodnocované. Ďalším dôležitým parametrom je \textit{MHI\_DURATION}. Tento parameter nám vymedzuje dĺžku histórie pohybu v jednotke \textit{timestamp}, akú má snímať. čím je hodnota vyššia, tým dlhšia história pohybu je na finálnom MHI zaznamenaná. 
@@ -308,25 +308,108 @@ V tejto ukážke kódu je celý proces čítania videa a jeho jednotlivých sní
 Na obrázku \ref{MHIbox} môžme vidieť príklad už predspracovaných MHI prostredníctvom nášho algoritmu. Takto sme si vytvorili všetkých 600 obrázkov z pohybov na ďalší výber príznakov. 
 
 \subsection{Výber príznakov}
+Keďže už máme predspracovaný obraz vo forme MHI, môžme pokračovať v extrahovaní príznakov z týchto obrazov. Na tento účel sme zvolili deskriptor HOG popísaný v časti \ref{HOGlabel}. Týmto spôsobom vytvoríme vektor príznakov, ktorý budeme môcť následne dať trénovať do klasifikátora pre každý jeden pohyb z trénovacej množiny. Príznaky z každého MHI obrázku by mali byť v tvare vektora konštantnej dĺžky. 
+
+\begin{lstlisting}[
+  caption={Algoritmus HOG},
+  label={HOGcreate},
+  language=python
+]
+image = cv2.imread('image.jpg', 0)
+
+def hogCreate(image):
+    winSize = (64,64)
+    blockSize = (16,16)
+    blockStride = (8,8)
+    cellSize = (8,8)
+    nbins = 9
+    winSigma = 4.
+    gammaCorrection = 0
+    nlevels = 64
+    hog = cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nbins, winSigma,            gammaCorrection,nlevels)
+    winStride = (8,8)
+    padding = (8,8)
+    locations = ((10,20),)
+    hist = hog.compute(image,winStride,padding,locations)
+    arrVectorFinal.append(np.concatenate(hist))
+\end{lstlisting}
+
+V tomto algoritme \ref{HOGcreate} vstupuje do funkcie \textit{hogCreate} parameter \textit{image} je vlastne obrázkom, ktorý je výstupom funkcie\textit{imread} z knižnice OpenCV. Pre dobré vybratie príznakov je potrebné nastaviť a vytvoriť \textit{HOGDescriptor}, ktorý obsahuje viacero parametrov:
+
+\begin{itemize}
+\item winSize
+\item blockSize
+\item blockStride
+\item cellSize
+\item nbins
+\item gammaCorrection
+\item nlevels 
+\end{itemize}
+
+\textbf{winSize} parameter určuje veľkosť okna na detekciu, musí byť zarovnaný podľa \textit{blockStride} a \textit{blockSize}.
+
+\textbf{blockSize} je veľkosť bloku v pixeloch. Má byť zarovnaný na veľkosť bunky \textit{cellSize}.
+
+\textbf{blockStride} musí byť násobkom veľkosti bunky, znamená veľkosť kroku, ktorým sa blok bude posúvať.
+
+\textbf{cellSize} je veľkosť bunky.
+
+\textbf{nbins} je počet rozdelení uhlov do ktorých jendotlivé gradienty zapadajú.
+
+\textbf{gammaCorrection} hodnota určuje, či sa má ppoužiť predspracovanie gamma úpravy alebo nie.
+
+\textbf{nlevels} určuje maximálny počet detekčných okien, predvolená hodnota je 64.
+
+Po takomto nastavení deskriptora HOG môžme následne spracovať vstupný obraz a vytvoriť tak histogram hodnôt, ktoré už sú reprezentovateľné príznaky, ktoré vložíme do vektora príznakov \textit{arrVectorFinal}. Konečným výstupom je teda pole vektorov, ktoré obsahuje príznaky extrahované zo všetkých testovacích videí. Tento vektor vieme následne použiť pre trénovanie klasifikátora.  
+
 
 \subsection{Klasifikácia}
+Pre natrénovanie klasifikátora sme sa rozhodli použiť SVM, ktorý sme popísali v časti \ref{SVMlabel}. Na implementovanie SVM sme použili triedu \textit{svm} z knižnice \textit{sklearn}. K dátam, ktoré máme uložené v \textit{arrVectorFinal} potrebujeme ešte označenie, ktorý vektor do akej kategórie patrí. Preto sme vytvorili ďalší vektor, v ktorom je pre každé video označenie kategórie, kam vektor patrí. Teraz už môžme natrénovať SVM. 
+\hfill \break
+\begin{lstlisting}[
+  caption={Trénovanie klasifikátora},
+  label={SVMcreate},
+  language=python
+]
+clf = svm.SVC(decision_function_shape='ovr')
+clf.fit(arrVectorFinal, classVector)
+joblib.dump(clf, 'Model.pkl') 
+\end{lstlisting}
+Algoritmus \ref{SVMcreate} využíva volanie funkcií \textit{svm.SVC}, ktoré nám vytvorí klasifikátor (angl. Support Vector Classifier), rozhodovaciu funkciu sme zvolili \textit{ovr} (angl. one versus rest), keďže máme viac ako dve triedy pohybov. Následne prostredníctvom funkcie \textit{fit} sme natrénovali klasifikátor \textit{clf}, kde boli vložené vektory príznakov \textit{arrVectorFinal} a vektor tried \textit{classVector}. Takto natrénovaný model bolo potrebné uložiť pre ďalšie použitie a testovanie. 
 
 \subsection{Opravy a priebežné testovania}
+Po naprogramovaní všetkých základných častí nášho projektu sme potrebovali otestovať naše riešenie, či náš klasifikátor funguje dobre a či môžme prejsť ku finalizácii výsledkov. 
 
-\section{Testovanie a porovnanie riešení}
-\noindent Verzia FEIstyle 1.5 používa glossary\footnote{\url{https://www.ctan.org/pkg/glossaries?lang=en}} balík.
-\acrfull{cdma} je dlhá skratka naopak \acrshort{gsm} je skratka v krátkej forme.
+Aby sme vedeli výsledok trénovania našej SVM, potrebovali sme výsledky vizualizovať, ako prebehlo rozdelenie do tried. Na to sme využili testovací nástroj \textit{TSNE}, ktorého algoritmus nájdete v prílohe \ref{att:B}.
 
+\subsubsection{Prvotné testy}
+Ako prvý krok sme zvolili testovanie a tréning dvoch množín a teda beh a boxovanie. SVM sme natrénovali na tridsiatich videách z triedy behu a tridsiatich videách z triedy boxovania. 
 
-\subsection{Vzhľad}
-\noindent Dôležitou požiadavkou kladenou na rozšírenie bolo príjemné používateľské rozhranie. Z~tohto dôvodu malo rozšírenie obsahovať zoznam modifikovaných vlastností a tlačidlo pre prístup k nastaveniam rozšírenia v jednoduchej a praktickej forme. Predpokladaný vzhľad je zobrazený na obrázku č. \ref{vzhladobr}.
-\begin{figure}[!htbp]
+Výsledok trénovania bol pre nás dobrý, keďže už vizuálne bolo vidno rozdelenie týchto pohybov do dvoch tried. Výsledok môžte vidieť na obrázku \ref{Test2Class}.
+
+\begin{figure}[h]
   \centering
-  \includegraphics[width=8cm]{img/MHIalg.jpg}
-  \caption{Predpokladaný vzhľad rozšírenia.}
-  \label{vzhladobr}
-\end{figure}	 
-\noindent Dôležitou požiadavkou kladenou na rozšírenie bolo príjemné používateľské rozhranie.\cite{t00} Z~tohto dôvodu malo rozšírenie obsahovať zoznam modifikovaných vlastností a tlačidlo pre prístup k nastaveniam rozšírenia v jednoduchej a praktickej forme. Predpokladaný vzhľad je zobrazený na obrázku č. \ref{vzhladobr}.
+  \includegraphics[width=10cm]{img/test2classes.png}
+  \caption{Test dvoch tried pohybu}
+  \label{Test2Class}
+\end{figure} 
+
+
+Do ďalšieho trénovania sme zapojili 5 tried pohybov, teda dataset KTH bez triedy pomalého behu. Takto natrénované SVM sme znovu podrobili testu \textit{TSNE}, kde výstup vyzeral ako na obrázku \ref{Test5Class1}, výsledky síce dávali zmysel, avšak rozdelenie jednotlivých tried nebolo až tak prehľadné ako sme si predstavovali, preto sme sa rozhodli analyzovať náš postup a pristúpiť k optimalizácii riešenia a zbieraniu ďalších príznakov. 
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=10cm]{img/test5classes1.png}
+  \caption{Prvý test piatich tried pohybu}
+  \label{Test5Class1}
+\end{figure}
+
+\subsubsection{Opravy a vylepšenie príznakov}
+\section{Testovanie a porovnanie riešení}
+
+
+
+
 
 \begin{algorithm}
 \scriptsize
