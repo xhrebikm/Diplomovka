@@ -95,6 +95,8 @@
 \usepackage[acronym,nopostdot,nogroupskip,nonumberlist]{glossaries}
 % \usepackage{showframe} % debugging overflows
 
+
+\usepackage{float}
 % \cftsetpnumwidth{1.8em} % set the dots width in loX (f,t,l,a...) https://tex.stackexchange.com/q/369283/106389
 
 \newboolean{isThesis}

@@ -17,17 +17,29 @@ Scikit-learn je knižnica s otvoreným zdrojovým kódom pre strojové učenie p
 NumPy je rozšírenie do Pythonu, ktoré nám umožňuje rýchle a efektívne vykonávanie operácií nad poľami homogénnych dát. NumPy pole je multidimenzionálne pole objektov ktoré majú všetky rovnaký typ. V pamäti sa nachádza ako objekt, ktorý smeruje na blok pamäte, ktorý drží informáciu o type údajov v pamäti, počet dimenzií pamäte, veľkosť každej dimenzie a taktiež aj vzdialenosti medzi jednotlivými prvkami pozdĺž každej z osí. Narozdiel od klasického zoznamu, ktorý je implementovaný ako zoznam smerníkov je prehľadávanie NumPy poľa rýchlejšie. klasický zoznam potrebuje na iteráciu poľa prístup cez dva smerníky, čo predĺžuje čas prehľadávania.\cite{c8}
 
 
-\section{Princíp spracovania obrazu a databázy}
-V prvej časti tejto práce si predstavíme a zároveň porovnáme metódy, ktoré sme zvažovali pri riešení nášho problému. Takisto si zhrnieme aké databázy pohybov máme k dispozícii pre potreby tejto práce, typy databáz, dĺžky jednotlivých videí, vlastnosti a aké druhy aktivít sa v týchto videách nachádzajú. Taktiež je potrebné predstaviť metodológiu spracovania údajov pre zachytenie vhodných vlastností videa na rozpoznanie.
+\section{Princípy riešenia}
+V prvej časti tejto práce si predstavíme a zároveň porovnáme metódy, ktoré sme zvažovali pri riešení nášho problému. Takisto si zhrnieme aké databázy pohybov máme k dispozícii pre potreby tejto práce, typy databáz, dĺžky jednotlivých videí, vlastnosti a aké druhy aktivít sa v týchto videách nachádzajú. Taktiež je potrebné predstaviť metodológiu spracovania údajov pre zachytenie vhodných vlastností videa na rozpoznanie. Na obrázku \ref{UML1} je znázornená predstava riešenia problému detekcie a rozpoznávania pohybu. Základom je načítanie videí, následne ich predspracovanie na extrakciu príznakov a samotná extrakcia. Konečným krokom v procese by malo byť testovanie a vyhodnotenie aplikácie. 
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{img/actTrenovanieKlasifikatora.jpg}
+  \caption{Diagram plánu vývoja riešenia}
+  \label{UML1}
+\end{figure}
 
 \subsection{Spôsob spracovania sekvencie}
-Zo zadania vyplýva, že pre získanie príznakov z videa budeme potrebovať videosekvenciu rozdeliť na menšie časti, respektíve ju spracovať do formátu obrázku (.jpg, .png. alebo iné). Jednotlivé snímky z videa sú potrebné na hlbšiu analýzu. Podľa zvoleného datasetu budeme môcť zvoliť či budeme používať celú videosekvenciu, alebo iba jej časť, v ktorej je zrejmý druh pohybu. V jednotlivých triedach videí bude potrebné hľadať spoločné a rozdielne znaky na to, aby sme následne vybrali vhodný postup na spracovanie z získanie vhdných príznakov. Knižnica OpenCV neobsahuje metódy ktoré zabezpečia čítanie a prenos obrazu, avšak jej metódy využívajú funkcionalitu ďalšej knižnice FFmpeg, ktorá distribuuje prostredníctvom rozhrania jednotlivé obrazové snímky. 
+Zo zadania vyplýva, že pre získanie príznakov z videa budeme potrebovať videosekvenciu rozdeliť na menšie časti, respektíve ju spracovať do formátu obrázku (.jpg, .png. alebo iné). Jednotlivé snímky z videa sú potrebné na hlbšiu analýzu. Podľa zvoleného datasetu budeme môcť zvoliť či budeme používať celú videosekvenciu, alebo iba jej časť, v ktorej je zrejmý druh pohybu. 
+
+V jednotlivých triedach videí bude potrebné hľadať spoločné a rozdielne znaky na to, aby sme následne vybrali vhodný postup na spracovanie z získanie vhdných príznakov. Knižnica OpenCV neobsahuje metódy ktoré zabezpečia čítanie a prenos obrazu, avšak jej metódy využívajú funkcionalitu ďalšej knižnice FFmpeg, ktorá distribuuje prostredníctvom rozhrania jednotlivé obrazové snímky. 
 
 \subsubsection{Získanie časovo-priestorových vzťahov}
 Bude potrebné získať tieto vzťahy na porovnávanie s ďalšími videami, teda určenie vhodného spôsobu na získanie týchto vzťahov. Jedným zo spôsobov je napríklad algoritmus MHI (Motion History Image), ktorý nám môže zabezpečiť tieto príznaky z videa uložiť a ďalej spracovávať. Podľa tohto algoritmu by sme vedeli určiť odkiaľ kam sa aktér z videa pohyboval, akým spôsobom a rýchlosťou, čo môžme považovať za prvé vhodné príznaky pre určenie typu pohybu.\cite{c3} Tento algoritmus si bližšie popíšeme ďalej v tejto práci.
 
 \subsubsection{Extrakcia príznakov}
-Extrakcia príznakov je dôležitou časťou pre natrénovanie klasifikátora. Preto je potrebné vybrať príznaky, ktoré nám s čo najvyššou presnosťou zadefinujú konkrétny pohyb, ktorý sa bude vykonávať vo videu. Mali by to byť príznaky, ktoré sú jednoznačné a jedinečné pre každý z druhov pohybu. Preto musíme uvažovať vhodnú metódu extrahovania príznakov, aby sme zaistili diverzitu medzi triedami jednotlivých typov pohybu.  Tieto príznaky budeme extrahovať z predspracovaného zdroja a ukladať na disk pre natrénovanie klasifikátora, prípadne viacnásobné trénovanie a testovanie bude vhodné jednotlivé výsledky ukladať pre neskoršie porovnanie.
+Extrakcia príznakov je dôležitou časťou pre natrénovanie klasifikátora. Preto je potrebné vybrať príznaky, ktoré nám s čo najvyššou presnosťou zadefinujú konkrétny pohyb, ktorý sa bude vykonávať vo videu. Mali by to byť príznaky, ktoré sú jednoznačné a jedinečné pre každý z druhov pohybu. Preto musíme uvažovať vhodnú metódu extrahovania príznakov, aby sme zaistili diverzitu medzi triedami jednotlivých typov pohybu. K tomu nám bude nápomocná aj kombinácia viacerých spôsobov extrakcie. 
+
+Tieto príznaky budeme extrahovať z predspracovaného zdroja a ukladať na disk pre natrénovanie klasifikátora, prípadne viacnásobné trénovanie a testovanie bude vhodné jednotlivé výsledky ukladať pre neskoršie porovnanie.
 
 \subsubsection{Návrh klasifikátora}
 Po úspešnom získaní príznakov z každej videosekvencie bude potrebné natrénovať klasifikátor tak, aby nám každá skupina spracovaných videozáznamov spadala do jednej triedy. Takto natrénovaný klasifikátor budeme potrebovať uložiť pre potreby testovania a porovnávania výsledkov a diverzity jednotlivých skupín. Zároveň budeme potrebovať zvoliť vhodný pomer dát na testovanie a tréning na základe Datábáz, ktoré budeme mať k dispozícii. Z tohto dôvodu budeme potrebovať čo najviac videí, aby bol návrh klasifikačnej metódy čo najpresnejší.
@@ -88,13 +100,15 @@ Pre potrebu rozpoznávania pohybu osoby existuje viacero databáz, ktoré sme v 
 \textbf{WEIZMANN} obsahuje 10 tried pohybu, celkový počet videí je 90. Obsahujú triedy pohybu ako chôdza, beh, kývanie jednou alebo dvomi rukami, skok na mieste a iné. Videá sú natočené so statickou kamerou a pozadím  v interiéri  s rozlíšením 180 x 144. \cite{c1}
 
 \subsection{Možnosti spracovania obrazu}
-Na získanie príznakov a potrebu klasifikácie pohybu analyzujeme a zvažujeme konkrétne spôsoby spracovania obrazu z videa. Pre tento účel berieme v úvahu algoritmus \acrfull{mhi} na extrakciu prvotných príznakov a následné spracovanie pomocou \acrfull{hog}. Takto získané príznaky by sme následne vedeli natrénovať pomocou \acrfull{svm}. Z natrénovanej SVM vieme otestovať úspešnosť klasifikátora, ktorý sme natrénovali a tým sa dostať ku výsledkom. 
+Na získanie príznakov a potrebu klasifikácie pohybu analyzujeme a zvažujeme konkrétne spôsoby spracovania obrazu z videa. Pre tento účel berieme v úvahu algoritmus \acrfull{mhi} na extrakciu prvotných príznakov a následné spracovanie pomocou \acrfull{hog}. 
+
+Pre zosilnenie našich príznakov a zaručenie vyššej úspešnosti klasifikácie uvažujeme použitie \acrfull{pca}, ktoré taktiež urýchli trénovanie klasifikátora. Takto získané príznaky by sme následne vedeli natrénovať pomocou \acrfull{svm}. Z natrénovanej SVM vieme otestovať úspešnosť klasifikátora, ktorý sme získali a tým sa dostať ku výsledkom a porovnávaniam. 
 
 \subsubsection{Motion History Image} \label{MHIlabel}
 \acrshort{mhi} je metódou, ktorá je založená na časovej šablóne. Je to jednoduchá metóda avšak robustná, vhodná na reprezentovanie a analýzu pohybu.\cite{c3}  Táto metóda bola prvýkrát popísaná v dokumente ``An appearance-based representation of action'' od Aarona Bobicka a Jamesa W. Davisa.\cite{c2} Rozpoznávanie akcie pomocou MHI patrí do skupiny prispôsobovania šablóny. V MHI sa informácia pohybu v čase spája do jedného obrázku, kde intenzita pixelov je funkciou histórie pohybu na danej pozícii pixelu. MHI sa vypočítava pomocou aktualizačnej funkcie.\ref{MHIeq}
 
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/MHIeq.jpg}
   \caption{Funkcia zmeny pixelov v MHI}
@@ -105,9 +119,9 @@ Táto aktualizačná funkcia je volaná pre každý ďalší snímok, ktorý ana
 
 To nám umožňuje zaznamenať pohyb z videa do jediného obrázku, v ktorom je vystihnutý celý priebeh videa alebo jeho časti. Táto technika je vhodná na použitie pri videách so statickou kamerou a pozadím.\cite{c10}
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=10cm]{img/MHIclap.jpg}
+  \includegraphics[width=13cm]{img/MHIclap.jpg}
   \caption{Motion History image tlieskania}
   \label{MHIclap}
 \end{figure}
@@ -117,14 +131,20 @@ Na obrázku \ref{MHIclap} je príklad spracovaného pohybu z videa do MHI, na kt
 	 
 
 \subsubsection{Histogram of Oriented Gradients} \label{HOGlabel}
-HOG je metóda extrakcie príznakov z obrazu. Extrahuje príznaky z každej časti vstupného obrazu. Snaží sa zachytiť tvar štruktúry v regiónoch pomocou prechodov farieb jednotlivých pixelov. Rozdeľuje obraz na menšie spojené časti (napríklad 8 x 8 pixelov)a tie časti do ešte menších blokov z ktorých sa následne zostavuje histogram. Deskriptor je spojenie týchto histogramov.  Každá z týchto častí  má rovnaký počet orientácií gradientu.  Pre zvýšenie presnosti môžu byť lokálne histogramy normalizované na základe kontrastu a výpočtom miery intenzít naprieč väčšími časťami obrazu, teda bloku. Táto normalizácia vedie k zvýšenej invariantnosti pri zmene osvetlenia alebo tienenia. HOG Deskriptor má výhody v tom, že pôsobí na lokálne bunky, je invariantný voči geometrickým a fotometrickým transformáciám. N. Dalal a B. Triggs zistili, že hrubé priestorové vzorkovanie, jemné vzorkovanie a silná lokálna fotometrická normalizácia umožňujú HOG deskriptoru vhodne detekovať ľudské bytosti v obrazoch. 
+HOG je metóda extrakcie príznakov z obrazu. Extrahuje príznaky z každej časti vstupného obrazu. Snaží sa zachytiť tvar štruktúry v regiónoch pomocou prechodov farieb jednotlivých pixelov. Rozdeľuje obraz na menšie spojené časti (napríklad 8 x 8 pixelov)a tie časti do ešte menších blokov z ktorých sa následne zostavuje histogram. Deskriptor je spojenie týchto histogramov. 
+
+Každá z týchto častí  má rovnaký počet orientácií gradientu.  Pre zvýšenie presnosti môžu byť lokálne histogramy normalizované na základe kontrastu a výpočtom miery intenzít naprieč väčšími časťami obrazu, teda bloku. Táto normalizácia vedie k zvýšenej invariantnosti pri zmene osvetlenia alebo tienenia. 
+
+HOG Deskriptor má výhody v tom, že pôsobí na lokálne bunky, je invariantný voči geometrickým a fotometrickým transformáciám. N. Dalal a B. Triggs zistili, že hrubé priestorové vzorkovanie, jemné vzorkovanie a silná lokálna fotometrická normalizácia umožňujú HOG deskriptoru vhodne detekovať ľudské bytosti v obrazoch. 
 
 \paragraph{Výpočet gradientu}
 
 Základným krokom pri HOG algoritme je výpočet gradientových hodnôt. Najbežnejšou metódou je aplikácia 1-D centrovanej diskrétnej masky v horizontálnom alebo aj vertikálnom smere. Táto metóda vyžaduje filtrovanie farieb alebo intenzitu obraz s filtračnými jadrami.
 
 \paragraph{Histogram orientovaných gradientov}
-Ďalším krokom je vytvorenie histogramu orientovaných gradientov. Každý pixel v bunke pridáva svoju ováhovanú orientáciu pre orientovaný histogramový kanál, ktorý je vytvorený na základe výpočtu gradientov. Bunky môžu byť obdĺžníkového alebo radiálneho tvaru a histogramové kanály sú rozložené rovnomerne od 0 do 180 alebo 0 - 360 stupňov, záleží od toho, či gradienty môžu nadobúdať aj zápornú hodnotu, alebo nie. Podľa výskumov  N. Dalala a B. Triggsa bolo zistené, že najvhodnejší počet kanálov na detekovanie osoby je 9 pri rozsahu 0 - 360 stupňov.
+Ďalším krokom je vytvorenie histogramu orientovaných gradientov. Každý pixel v bunke pridáva svoju ováhovanú orientáciu pre orientovaný histogramový kanál, ktorý je vytvorený na základe výpočtu gradientov. Bunky môžu byť obdĺžníkového alebo radiálneho tvaru a histogramové kanály sú rozložené rovnomerne od 0 do 180 alebo 0 - 360 stupňov, záleží od toho, či gradienty môžu nadobúdať aj zápornú hodnotu, alebo nie. 
+
+Podľa výskumov  N. Dalala a B. Triggsa bolo zistené, že najvhodnejší počet kanálov na detekovanie osoby je 9 pri rozsahu 0 - 360 stupňov.
 
 \paragraph{Bloky deskriptorov}
 Na zohľadnenie zmien v osvetlení a kontraste musí byť intenzita gradientu lokálne normalizovaná, čo vyžaduje spoločné zoskupovanie buniek do väčších priestorovo prepojených blokov. HOG Deskriptor je následne spojený vektor komponentov normalizovaných histogramov buniek zo všetkých oblastí blokov. Tieto bloky sa prekrývajú, z čoho vyplýva, že každý jedna bunka prispieva voac ako raz do vytvorenia konečného deskriptora. Existujú dva hlavné tvary blokov:
@@ -156,7 +176,7 @@ V práci N. Dalala a B. Triggsa je uvedené, že optimálne parametre sú štyri
 Podľa zistení N. Dalala a B. Triggsa najvhodnejšie zvoleným spôsobom je vytvorenie dvoch radiálnych buniek so štyrmi uhlovými bunkami, polomerom stredovej bunky 4 pixely a faktor expanzie s hodotou 2. 
 
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/HOGimg.png}
   \caption{R-HOG a C-HOG}
@@ -168,7 +188,7 @@ Na obrázku \ref{HOGimg} môžme vidieť ako vyzerá rozdelenie obrazu podľa R-
 \paragraph{Normalizácia blokov}
 Sú štyri rôzne spôsoby normalizácie blokov, ktoré sú popísané na obrázku \ref{HOGnorm}.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/HOGnorm.png}
   \caption{Metódy normalizácie}
@@ -176,6 +196,35 @@ Sú štyri rôzne spôsoby normalizácie blokov, ktoré sú popísané na obráz
 \end{figure}
 
 Schéma \textbf{\textit{L2-hys}} môže byť vypočítaná z \textbf{\textit{L2-norm}}, kde sa výsledok renormalizuje pre vektor \textit{v < 0.2}. Všetky štyri normy majú výrazne lepšie výsledky ako nenormalizované dáta. Tieto údaje sú následne použiteľné ako vektor príznakov pre SVM. \cite{c11}
+
+
+\subsubsection{Principal Component Analysis} \label{PCAlabel}
+Analýza hlavných komponentov (angl. Principal Components Analysis) je metóda štatistiky, ktorá využíva ortogonálnu transformáciu za účelom zmeny prvkov, v ktorých sa vyskytuje korelácia na prvky, kde  sa takáto lineárna korelácia nebude existovať. \acrshort{pca} teda spracováva a upravuje jednotlivé komponenty tak, aby sa ich dimenzia zmenšila, alebo bola nanajvýš rovnaká a zároveň sa snaží zachovať čo najväčšie množstvo informácií o pôvodných premenných. Tento prístup pomáha analyzovať dané dáta v podpriestore, čo nám umožňuje ďalšie spracovanie.
+
+Dôležitou súčasťou v PCA sú vlastné vektory. Sú to nenulové vektory, ktorých smer sa po transformácii pomocou lineárneho operátora nemení, pojem vlastný vektor v PCA obmieňame za hlavný komponent. 
+
+V Computer Vision má táto metóda veľmi dobrý vplyv na dáta charakterizujúce rôzne špecifické tvary, objekty, keďže nám umožňuje zosilniť význam príznakov, ktoré sú pre daný problém dôležité, a tie, ktoré nie sú potrebné, dokáže eliminovať. Táto transformácia teda zvyšuje varianciu hlavných komponentov naprieč všetkými lineárnymi kombináciami vektora, čo napomáha zvyšovať úspešnosť klasifikátora pri riešení rozpoznávania na extrakciu príznakov. Túto metódu navrhol v roku 1901 matematik anglického pôvodu Karl Pearson. Jej rôzne obmenené a vylepšené verzie sa využívajú dodnes v štatistike, \textit{Computer Vision}, robotike a ďalších smeroch.
+
+Pomocou Jordanovej dekompozičnej vety o symetrických maticiach môžme symetrické štvorcové matice zapísať v nasledovnom tvare, ktorý je na obrázku \ref{PCAJord} \cite{c15} \cite{c16}.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{img/PCAjordan.png}
+  \caption{Definícia Jordanovej matice}
+  \label{PCAJord}
+\end{figure}
+
+Z tejto matice následne vieme vypočítať vektor hlavných komponentov, viď obrázok \ref{PCAhlav}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{img/PCAhlavnekomponenty.png}
+  \caption{Výpočet hlavných komponentov}
+  \label{PCAhlav}
+\end{figure}
+\cite{c17}
+
+Redukciou dimenzie vieme dosiahnúť aj kratšiu dobu trénovania klasifikátora ako aj jeho vyššiu úspešnosť. 
+
 
 \subsubsection{Support Vector Machine} \label{SVMlabel}
 SVM je metóda strojového učenia s učiteľom, je vhodná na používanie pri klasifikácii alebo regresnej analýze. Táto metóda na základe trénovacích vzoriek, ktoré sú priradené do jednej z dvoch tried vytvorí model. Tento model je následne schopný priraďovať nové vzorky do jednej z týchto tried, čo z neho robí nepravdepodobnostný binárne lineárny klasifikátor. SVM model reprezentuje vzorky ako body v priestore, tak, že mapuje jednotlivé vstupy do kategórií, ktoré sú v tomto priestore jasne oddelené. Klasifikátor priraďuje nové vzorky podľa toho, ku ktorej z tried majú bližšie v rámci tohto priestoru.
@@ -193,7 +242,7 @@ Hyperroviny vo viacrozmernom priestore sú definované ako súbory bodov, kde ic
 \paragraph{Lineárny klasifikátor}
 Najjednoduchšou možnosťou použitia SVM je prípad lineárneho klasifikátora pre dáta, ktoré je možné lineárne rozdeliť do dvoch tried pomocou hyperroviny. Príklad takéhoto problému je na obrázku \ref{LinSep}.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
   \centering
   \includegraphics[width=10cm]{img/linsep.png}
   \caption{Príklad lineárne separovateľného problému}
@@ -204,7 +253,7 @@ Najjednoduchšou možnosťou použitia SVM je prípad lineárneho klasifikátora
 \paragraph{Nelineárny klasifikátor}
 Na obrázku č. \ref{SVMobr} môžme vidieť lineárne neseparovateľný problém dvoch množín, ktorý sa po pridaní tretej dimenzie stáva lineárne separovateľný. Takýmto spôsobom dokážeme s SVM zatriediť jednotlivé videá z množín do správnych tried. Transformácia do vyššierozmerného priestoru sa nazýva jadrový trik \textit{(angl. kernel trick)}. Pomocou tohto triku vieme lineárne separovať aj lineárne neseparovateľné problémy.\cite{c12}
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
   \centering
   \includegraphics[width=16cm]{img/SVM.png}
   \caption{Rozšírenie dimenzie v SVM}
@@ -221,6 +270,10 @@ Medzi najčastejšie používané jadrové funkcie patria:
 \item \textbf{Dvojvrstvová neurónová sieť }
 \item $   K(x,y) = \tanh(\kappa x.y - \delta)  $
 \end{itemize}
+
+
+
+\newpage
 
 \section{Návrh riešenia}
 Po oboznámení s teoretickými piliermi tejto práce prejdeme ku konkrétnemu riešeniu témy a implementácii, ktorú sa nám podarilo vytvoriť. Postupne prejdeme jednotlivé kroky vytvárania programu od analýzy datasetov, načítavania a ukladania videosekvencií do obrazkových formátov. Ďalej si ukážeme metódy a spôsoby, ktorými sme následne vzniknuté dáta spracovali pre potrebu výberu príznakov a zatriedenia do jednotlivých tried. Fungovanie programu priblížime aj časťami kódu s popisom, na čo slúži a ako pracuje. Súčasťou tejto kapitoly bude aj krátky popis zmien, ktoré sme počas návrhu tejto implementácie vykonali a samozrejme aj ich dopad na finálne riešenie.
@@ -239,7 +292,7 @@ Pre naše riešenie sme vyberali z viacerých datasetov, ktoré boli popísané 
 
 Pri analýze snímkov sme zistili, že dĺžka videí je od \textit{\textbf{8 do 59 sekúnd}}. Čo pre dané typy pohybov je postačujúci čas na to, aby sme z nich dokázali extrahovať dôležité informácie, ktoré sa tohto pohybu týkajú.  Počet snímkov za sekundu v každom z videí je 25, z tohto dôvodu sme usúdili, že aj v prípade krátkeho videa s dĺžkou 8 sekúnd budeme mať k dispozícii minimálne \textit{\textbf{200}} snímkov. Ďalším dôležitým faktom je, že sa budeme musieť popasovať s podobnosťou pohybov behu, pomalého behu a chôdze, keďže sú veľmi podobné, a ich rozdiel je iba v rýchlosti vykonávania. Je nutné dodať, že v každom z videí sa jednotlivé typy pohybov opakovali viacnásobne, z čoho sme už vopred usudzovali, že na spracovanie nám bude stačiť iba časť videa, čo nám ušetrí čas spracovania dát počas behu programu. 
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
   \includegraphics[width=10cm]{img/KTHdataset.png}
   \caption{Jednotlivé pohyby v datasete KTH \cite{c14}}
@@ -299,17 +352,19 @@ V tejto ukážke \ref{MHIcreate} kódu je celý proces čítania videa a jeho je
  Na čítanie snímkov sme použili knižnicu OpenCV, ako aj na spracovanie jednotlivých snímkov do MHI. Dôležitými parametrami, ktoré sme nastavovali boli \textit{frame\_num}, ktorý nám označoval počet prehratých snímkov, pri ktorom sme uložili vyhotovené MHI, ďalej to bol \textit{DEFAULT\_TRESHOLD}, ktorý nám filtroval nepotrebné pixely s veľmi nízkou hodnotou, pri trénovaní a testovaní sme zistili, že hodnota \textit{\textbf{50}} bude dobrá. Akonáhle bol tento parameter vyšší alebo nižší, obrázky už neboli až tak dobre vyhodnocované. Ďalším dôležitým parametrom je \textit{MHI\_DURATION}. Tento parameter nám vymedzuje dĺžku histórie pohybu v jednotke \textit{timestamp}, akú má snímať. čím je hodnota vyššia, tým dlhšia história pohybu je na finálnom MHI zaznamenaná. 
  Pre naše potreby sme zvolili tento parameter na hodnotu \textit{\textbf{80}}.
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=8cm]{img/MHIbox.png}
+  \includegraphics[width=15cm]{img/MHIbox.png}
   \caption{Predspracované videá boxu.}
   \label{MHIbox}
 \end{figure}  
-Na obrázku \ref{MHIbox} môžme vidieť príklad už predspracovaných MHI prostredníctvom nášho algoritmu. Takto sme si vytvorili všetkých 600 obrázkov z pohybov na ďalší výber príznakov. 
+
+Na obrázku \ref{MHIbox} môžme vidieť príklad už predspracovaných MHI prostredníctvom nášho algoritmu. Takto sme si vytvorili všetkých 600 obrázkov z pohybov na ďalší výber príznakov, ktoré sme uložili podľa typu pohybu do jednotlivých priečinkov s ich názvami. 
 
 \subsection{Výber príznakov}
-Keďže už máme predspracovaný obraz vo forme MHI, môžme pokračovať v extrahovaní príznakov z týchto obrazov. Na tento účel sme zvolili deskriptor HOG popísaný v časti \ref{HOGlabel}. Týmto spôsobom vytvoríme vektor príznakov, ktorý budeme môcť následne dať trénovať do klasifikátora pre každý jeden pohyb z trénovacej množiny. Príznaky z každého MHI obrázku by mali byť v tvare vektora konštantnej dĺžky. 
+Keďže už máme predspracovaný obraz vo forme MHI, môžme pokračovať v extrahovaní príznakov z týchto obrazov. Na tento účel sme zvolili deskriptor HOG popísaný v časti \ref{HOGlabel}. Týmto spôsobom vytvoríme vektor príznakov, ktorý budeme môcť následne spracovať prostredníctvom PCA a tak ho dať trénovať do klasifikátora pre každý jeden pohyb z trénovacej množiny. Príznaky z každého MHI obrázku by mali byť v tvare vektora konštantnej dĺžky. 
 
+\subsubsection{Príznaky HOG} \label{HOGim}
 \begin{lstlisting}[
   caption={Algoritmus HOG},
   label={HOGcreate},
@@ -360,7 +415,80 @@ V tomto algoritme \ref{HOGcreate} vstupuje do funkcie \textit{hogCreate} paramet
 
 \textbf{nlevels} určuje maximálny počet detekčných okien, predvolená hodnota je 64.
 
-Po takomto nastavení deskriptora HOG môžme následne spracovať vstupný obraz a vytvoriť tak histogram hodnôt, ktoré už sú reprezentovateľné príznaky, ktoré vložíme do vektora príznakov \textit{arrVectorFinal}. Konečným výstupom je teda pole vektorov, ktoré obsahuje príznaky extrahované zo všetkých testovacích videí. Tento vektor vieme následne použiť pre trénovanie klasifikátora.  
+Po takomto nastavení deskriptora HOG môžme následne spracovať vstupný obraz a vytvoriť tak histogram hodnôt, ktoré už sú reprezentovateľné príznaky, ktoré vložíme do vektora príznakov \textit{arrVectorFinal}. Konečným výstupom je teda pole vektorov, ktoré obsahuje príznaky extrahované zo všetkých testovacích videí. Už tento vektor vieme následne použiť pre trénovanie klasifikátora, avšak pre zlepšenie výsledkov ešte tieto dáta upravíme. Vektor týchto príznakov sme zložili z troch MHI obrázkov z jedného videa, ktoré boli spracované vo štvrtej, šiestej a deviatej sekunde, čo dokáže presnejšie identifikovať pohyb jednotlivých aktérov.
+
+
+\subsubsection{Prídavné príznaky} \label{pridavny}
+Ďalšími príznakmi, ktoré sme sa rozhodli vybrať do vektora príznakov sú priemery hodnôt jednotlivých polí pixelov. Týmto algoritmom sme chceli znovu navýšiť úspešnosť, keďže pohyby v jednotlivých triedach sa vykonávajú v rôznych častiach snímaného obrazu. Týmito hodnotami vieme určiť v ktorých častiach obrazu MHI sa vykonával pohyb a v akej intenzite. Pre tento algoritmu sme potrebovali zvoliť vhodné parametre: 
+\begin{itemize}
+\item Šírka okna
+\item Výška okna
+\end{itemize}
+
+\textbf{Šírka okna} nám udáva počet pixelov, ktoré budeme spracovávať v jednom rade pixelov v iterácii.
+\textbf{Výška okna} je potrebná na definovanie počtu pixelov spracovávaných v stĺpci pixelov v iterácii.
+
+Tieto dva parametre je potrebné určiť ako delitele šírky (160px) a delitele výšky (120px) MHI obrázkov. V našej implementácii sme využili šírku a výšku s hodnotou 10.
+
+\begin{lstlisting}[
+  caption={Prídavné príznaky},
+  label={FeatAdd},
+  language=python
+  ]
+  HEIGHT = 10 
+  WIDTH = 10
+  
+  def processImg(image, boxes):
+    count = 0
+    rowBoxNum = 120 / HEIGHT
+    colBoxNum = 160 / WIDTH
+    sumOfBox = 0
+    additionalVector = []
+    value = 0
+        
+    data = np.asarray(image.getdata()).reshape(image.size)
+    
+    for i in range(0, rowBoxNum):
+        for j in range(0, colBoxNum):
+            for row in range(i*HEIGHT, i*HEIGHT + HEIGHT):
+                for column in range(j*WIDTH, j*WIDTH + WIDTH):
+                    sumOfBox = sumOfBox + data[column][row] 
+                    count = count + 1
+            value =  float(sumOfBox)/(WIDTH*HEIGHT)/255
+            additionalVector.append(value)
+            sumOfBox = 0
+    return additionalVector
+]
+
+\end{lstlisting}
+
+V algoritme \ref{FeatAdd} je vo funkcii \textit{processImg} na vstupe obrázok MHI (\textit{image} a počet okien pixelov s rozmermi 10 x 10 pixelov na jeden obrázok. Obraz sme si pre zjednodušenie vložili do \textit{NumPy} poľa a následne iterovali. Aby sme získali normalizovaný príznak \textit{(z rozmedzia <0,1>)}, potrebovali sme vydeliť hodnotu príznaku z jedného okna hodnotou \textit{255}, keďže každý pixel nadobúda hodnoty\textit{<0,255>} podľa svietivosti pixelu.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{img/AddFeat.png}
+  \caption{Výpočet príznaku okna pixelov}
+  \label{MHIbox}
+\end{figure}   
+
+Takto vypočítané príznaky sme pridávali do vektoru príznakov na následné spracovanie a úpravu v PCA.
+
+\subsubsection{Spracovanie pomocou PCA} \label{PCAim}
+V algoritme \ref{PCAcreate} na extrakciu komponentov, ktorú sme si popísali v časti \ref{PCAlabel} sme použili metódy triedy \textit{\textbf{PCA}} knižnice \textit{sklearn}. Pre vytvorenie objektu PCA, sme použili parameter \textit{n\_components}, ktorý udáva počet komponentov, koľko chceme vybrať z vektora príznakov \textit{arrVectorFinal}. Tento počet komponentov musí byť nižší alebo nanajvýš rovný počtu vektorov príznakov. Natrénovaný model PCA s vektorom príznakov \textit{arrVectorFinal} sme uložili pre ďalšie spracovanie v SVM.
+
+\begin{lstlisting}[
+  caption={Trénovanie PCA},
+  label={PCAcreate},
+  language=python
+]
+pca = PCA(n_components)
+pca.fit(arrVectorFinal)
+X_t_train = pca.transform(arrVectorFinal) 
+joblib.dump(pca, 'ModelPCA.pkl')   
+\end{lstlisting}
+
+Keďže v trénovacej množine máme iba 200 videí a tým by sme vedeli získať iba 200 hlavných komponentov, rozhodli sme sa v jednotlivých trénovaniach a testoch multiplikovať pole vektorov \textit{(2x, 4x)}  pred výpočtom PCA, aby sme dosiahli vyšší počet komponentov a tým aj lepší výsledok pri testoch. 
+  
 
 
 \subsection{Klasifikácia}
@@ -377,60 +505,38 @@ joblib.dump(clf, 'Model.pkl')
 \end{lstlisting}
 Algoritmus \ref{SVMcreate} využíva volanie funkcií \textit{svm.SVC}, ktoré nám vytvorí klasifikátor (angl. Support Vector Classifier), rozhodovaciu funkciu sme zvolili \textit{ovr} (angl. one versus rest), keďže máme viac ako dve triedy pohybov. Následne prostredníctvom funkcie \textit{fit} sme natrénovali klasifikátor \textit{clf}, kde boli vložené vektory príznakov \textit{arrVectorFinal} a vektor tried \textit{classVector}. Takto natrénovaný model bolo potrebné uložiť pre ďalšie použitie a testovanie. 
 
-\subsection{Opravy a priebežné testovania}
+\subsection{Priebežné testovania a ladenie}
 Po naprogramovaní všetkých základných častí nášho projektu sme potrebovali otestovať naše riešenie, či náš klasifikátor funguje dobre a či môžme prejsť ku finalizácii výsledkov. 
 
-Aby sme vedeli výsledok trénovania našej SVM, potrebovali sme výsledky vizualizovať, ako prebehlo rozdelenie do tried. Na to sme využili testovací nástroj \textit{TSNE}, ktorého algoritmus nájdete v prílohe \ref{att:B}.
+
+\subsubsection{t-SNE}
+Aby sme vedeli výsledok trénovania našej SVM, potrebovali sme výsledky vizualizovať, ako prebehlo rozdelenie do tried. Na to sme využili testovací nástroj \textit{\acrfull{tsne}}, ktorého algoritmus nájdete v prílohe \ref{att:B}. Tento algoritmus umožňuje vizualizáciu viacrozmerných dát do 2D priestoru. Túto techniku je možné implementovať pomocou aproximácií, ktoré môžu byť aplikované na datasety obrovských rozmerov. Autorom tohto algoritmu je \textbf{\textit{Laurens van der Maaten}}, ktorý pôsobí ako výskumný pracovník na poli strojového učenia a počítačového videnia. t-SNE implementoval pre množstvo jazykov vrátane jazyka Python, takže sme nemali problém tento nástroj využívať. \cite{c18}
 
 \subsubsection{Prvotné testy}
 Ako prvý krok sme zvolili testovanie a tréning dvoch množín a teda beh a boxovanie. SVM sme natrénovali na tridsiatich videách z triedy behu a tridsiatich videách z triedy boxovania. 
 
-Výsledok trénovania bol pre nás dobrý, keďže už vizuálne bolo vidno rozdelenie týchto pohybov do dvoch tried. Výsledok môžte vidieť na obrázku \ref{Test2Class}.
+Výsledok trénovania bol pre nás dobrý, keďže už vizuálne bolo vidno rozdelenie týchto pohybov do dvoch tried. Výsledok je možné vidieť na obrázku \ref{Test2Class}. 
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=10cm]{img/test2classes.png}
+  \includegraphics[width=16cm]{img/test2classes.png}
   \caption{Test dvoch tried pohybu}
   \label{Test2Class}
 \end{figure} 
 
 
-Do ďalšieho trénovania sme zapojili 5 tried pohybov, teda dataset KTH bez triedy pomalého behu. Takto natrénované SVM sme znovu podrobili testu \textit{TSNE}, kde výstup vyzeral ako na obrázku \ref{Test5Class1}, výsledky síce dávali zmysel, avšak rozdelenie jednotlivých tried nebolo až tak prehľadné ako sme si predstavovali, preto sme sa rozhodli analyzovať náš postup a pristúpiť k optimalizácii riešenia a zbieraniu ďalších príznakov. 
+Ako príklad uvedieme taktiež pokus trénovania s jedným MHI, ktorý bol vytvorený vo 4. sekunde priebehu pohybu, avšak bez získania prídavných príznakov \ref{pridavny} a využitia metódy PCA.  Do tohto testu sme zapojili 5 tried pohybov, teda dataset KTH bez triedy pomalého behu. Takto natrénované SVM sme znovu podrobili testu \textit{t-SNE}, kde výstup vyzeral ako na obrázku \ref{Test5Class1}, výsledky síce dávali zmysel, avšak rozdelenie jednotlivých tried nebolo až tak prehľadné ako sme si predstavovali.
 
-\begin{figure}[h]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=10cm]{img/test5classes1.png}
+  \includegraphics[width=16cm]{img/test5classes1.png}
   \caption{Prvý test piatich tried pohybu}
   \label{Test5Class1}
 \end{figure}
 
-\subsubsection{Opravy a vylepšenie príznakov}
-\section{Testovanie a porovnanie riešení}
+Z tohto dôvodu sme sa rozhodli analyzovať náš postup a pristúpiť k optimalizácii riešenia, zbieraniu a ladeniu príznakov za pomoci viacnásobného využitia MHI, prídavných príznakov \ref{pridavny} a aplikovania PCA, ako bolo spomenuté v častiach \ref{HOGim}, \ref{PCAim}, \ref{pridavny}.
+
+\section{Porovnanie riešení}
 
 
-
-
-
-\begin{algorithm}
-\scriptsize
-\begin{algorithmic}
- \STATE <text>
- \IF{<condition>} \STATE {<text>} \ELSE \STATE{<text>} \ENDIF
- \IF{<condition>} \STATE {<text>} \ELSIF{<condition>} \STATE{<text>} \ENDIF
- \FOR{<condition>} \STATE {<text>} \ENDFOR
- \FOR{<condition> \TO <condition> } \STATE {<text>} \ENDFOR
- \FORALL{<condition>} \STATE{<text>} \ENDFOR
- \WHILE{<condition>} \STATE{<text>} \ENDWHILE
- \REPEAT \STATE{<text>} \UNTIL{<condition>}
- \LOOP \STATE{<text>} \ENDLOOP
- \REQUIRE <text>
- \ENSURE <text>
- \RETURN <text>
- \PRINT <text>
- \COMMENT{<text>}
- \AND, \OR, \XOR, \NOT, \TO, \TRUE, \FALSE
-\end{algorithmic}
-\caption{Ukážka príkazov pre algorithmic}  
-\label{alg:preview}  
-\end{algorithm}
 
