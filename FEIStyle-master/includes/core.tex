@@ -483,12 +483,10 @@ V algoritme \ref{PCAcreate} na extrakciu komponentov, ktorú sme si popísali v 
 ]
 pca = PCA(n_components)
 pca.fit(arrVectorFinal)
-X_t_train = pca.transform(arrVectorFinal) 
 joblib.dump(pca, 'ModelPCA.pkl')   
 \end{lstlisting}
 
-Keďže v trénovacej množine máme iba 200 videí a tým by sme vedeli získať iba 200 hlavných komponentov, rozhodli sme sa v jednotlivých trénovaniach a testoch multiplikovať pole vektorov \textit{(2x, 4x)}  pred výpočtom PCA, aby sme dosiahli vyšší počet komponentov a tým aj lepší výsledok pri testoch. 
-  
+Trénovacia množina obsahuje 240 videí \textit{(6 tried po 40 videí)}, preto je aj maximálny počet hlavných komponentov, ktoré môžme získať z vektora príznakou pomocou PCA je 240. Teda výsledný vektor príznakov sa zmenšil na tie príznaky, ktoré sú najdôležitejšie. Neskôr v časti \ref{testalad} si ukážeme spôsoby, ktorými sme sa snažili naše výsledky ešte viac zlepšiť.  
 
 
 \subsection{Klasifikácia}
@@ -505,12 +503,14 @@ joblib.dump(clf, 'Model.pkl')
 \end{lstlisting}
 Algoritmus \ref{SVMcreate} využíva volanie funkcií \textit{svm.SVC}, ktoré nám vytvorí klasifikátor (angl. Support Vector Classifier), rozhodovaciu funkciu sme zvolili \textit{ovr} (angl. one versus rest), keďže máme viac ako dve triedy pohybov. Následne prostredníctvom funkcie \textit{fit} sme natrénovali klasifikátor \textit{clf}, kde boli vložené vektory príznakov \textit{arrVectorFinal} a vektor tried \textit{classVector}. Takto natrénovaný model bolo potrebné uložiť pre ďalšie použitie a testovanie. 
 
-\subsection{Priebežné testovania a ladenie}
-Po naprogramovaní všetkých základných častí nášho projektu sme potrebovali otestovať naše riešenie, či náš klasifikátor funguje dobre a či môžme prejsť ku finalizácii výsledkov. 
+\subsection{Priebežné testovania a ladenie} \label{testalad}
+Po naprogramovaní všetkých základných častí nášho projektu sme potrebovali otestovať naše riešenie, či náš klasifikátor funguje dobre a či môžme prejsť ku finalizácii výsledkov, prípadne k ďalším vylepšeniam a zmenám.
 
 
 \subsubsection{t-SNE}
 Aby sme vedeli výsledok trénovania našej SVM, potrebovali sme výsledky vizualizovať, ako prebehlo rozdelenie do tried. Na to sme využili testovací nástroj \textit{\acrfull{tsne}}, ktorého algoritmus nájdete v prílohe \ref{att:B}. Tento algoritmus umožňuje vizualizáciu viacrozmerných dát do 2D priestoru. Túto techniku je možné implementovať pomocou aproximácií, ktoré môžu byť aplikované na datasety obrovských rozmerov. Autorom tohto algoritmu je \textbf{\textit{Laurens van der Maaten}}, ktorý pôsobí ako výskumný pracovník na poli strojového učenia a počítačového videnia. t-SNE implementoval pre množstvo jazykov vrátane jazyka Python, takže sme nemali problém tento nástroj využívať. \cite{c18}
+
+
 
 \subsubsection{Prvotné testy}
 Ako prvý krok sme zvolili testovanie a tréning dvoch množín a teda beh a boxovanie. SVM sme natrénovali na tridsiatich videách z triedy behu a tridsiatich videách z triedy boxovania. 
@@ -519,24 +519,141 @@ Výsledok trénovania bol pre nás dobrý, keďže už vizuálne bolo vidno rozd
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=16cm]{img/test2classes.png}
+  \includegraphics[width=14cm]{img/test2classes.png}
   \caption{Test dvoch tried pohybu}
   \label{Test2Class}
 \end{figure} 
 
 
-Ako príklad uvedieme taktiež pokus trénovania s jedným MHI, ktorý bol vytvorený vo 4. sekunde priebehu pohybu, avšak bez získania prídavných príznakov \ref{pridavny} a využitia metódy PCA.  Do tohto testu sme zapojili 5 tried pohybov, teda dataset KTH bez triedy pomalého behu. Takto natrénované SVM sme znovu podrobili testu \textit{t-SNE}, kde výstup vyzeral ako na obrázku \ref{Test5Class1}, výsledky síce dávali zmysel, avšak rozdelenie jednotlivých tried nebolo až tak prehľadné ako sme si predstavovali.
+Ako príklad uvedieme taktiež pokus trénovania s jedným MHI, ktorý bol vytvorený vo 4. sekunde priebehu pohybu, avšak bez získania prídavných príznakov \ref{pridavny} a využitia metódy PCA.  Do tohto testu sme zapojili 5 tried pohybov, teda dataset KTH bez triedy pomalého behu, keďže sme usudzovali, že táto trieda sa dosť prelína medzi triedami behu a chôdze, čo sa ukáže aj na ďalších výsledkoch. 
+
+Takto natrénované SVM sme znovu podrobili testu \textit{t-SNE}, kde výstup vyzeral ako na obrázku \ref{Test5Class1}, výsledky síce dávali zmysel, avšak rozdelenie jednotlivých tried nebolo až tak prehľadné ako sme si predstavovali. Triedy behu a chôdze pôsobia veľmi chaoticky, tak ako aj boxovanie s tlieskaním a zasahovaním kývania.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=16cm]{img/test5classes1.png}
+  \includegraphics[width=14cm]{img/test5classes1.png}
   \caption{Prvý test piatich tried pohybu}
   \label{Test5Class1}
 \end{figure}
 
+Skúsili sme teda otestovať túto natrénovanú SVM, akú bude mať úspešnosť rozpoznávania. Výsledky môžte vidieť na obrázku \ref{Test5Class1g}.
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test5classes1tab.png}
+  \caption{Úspešnosť 5 tried z 1 MHI}
+  \label{Test5Class1g}
+\end{figure}
+
 Z tohto dôvodu sme sa rozhodli analyzovať náš postup a pristúpiť k optimalizácii riešenia, zbieraniu a ladeniu príznakov za pomoci viacnásobného využitia MHI, prídavných príznakov \ref{pridavny} a aplikovania PCA, ako bolo spomenuté v častiach \ref{HOGim}, \ref{PCAim}, \ref{pridavny}.
 
-\section{Porovnanie riešení}
+
+\subsubsection{Rozdelenie dát a finálne testy}
+Dáta na tréning a testovanie sme rozdelili do dvoch skupín v pomere 40 testovacích videí a 40 trénovacích videí. Všetky testy boli vykonané na rovnakých videách, takže výsledky úspešnosti sú objektívne a porovnateľné pre každý typ konfigurácie programu.
+Konfigurácie sme menili na 9 rôznych nastavení pre všetky triedy pohybov databázy KTH viď obrázok \ref{tabTesty}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/tabTesty.png}
+  \caption{Testovacie konfigurácie}
+  \label{tabTesty}
+\end{figure} 
+
+Ako vidno na obrázku, zvolili sme obmeny počtu MHI obrázkov s násobnými počtami vektorov pre získanie hlavných komponentov ako aj počet prídavných príznakov vypočítavaných z MHI. 
+
+\paragraph{1. Test} 
+V prvom teste s konfiguráciou jedného obrázku MHI, bez výpočtu PCA a prídavných príznakov sme dostali prvé výsledky \ref{test1}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6classes1g.png}
+  \caption{Test č. 1}
+  \label{test1}
+\end{figure} 
+
+Z výsledkov je viditeľný problém medzi triedou \textit{Running} a \textit{Jogging}, kde zo všetkých testovaných videí behu vyhodnotilo až 40\% ako pomalý beh a 35\% chôdze vyhodnotilo ako pomalý beh. 
+
+
+\paragraph{2. Test} 
+V druhom teste sme pridali ďalšie príznaky do vektora, výsledky pohybov sa zlepšili až na triedy behu, kde bol prepad až na úspešnosť 7,5\% a triedy behu, kde sa tiež znížila úspešnosť. Porovnanie je na obrázku \ref{test2}.
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6classes11g.png}
+  \caption{Test č. 2}
+  \label{test2}
+\end{figure} 
+
+\paragraph{3. Test} 
+V tomto teste sme sa rozhodli zistiť vplyv PCA na celkové riešenie problému. Výsledky ukázali všeobecné zlepšenie, hlavne v triede mávania rukami, kde sa úspešnosť zvýšila z 55\% na 72.5\%.  
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6classes11PCA1g.png}
+  \caption{Test č. 3}
+  \label{test3}
+\end{figure} 
+
+
+\paragraph{4. Test} 
+V nasledujúcich testoch nás zaujímal vplyv trojnásobného použitia obrázkov MHI na výsledky a úspešnosť testovania v spolupráci s rozširovaním PCA. Použili sme MHI z prvých 4, 6 a 9 sekúnd videa. Objavilo sa nepatrné zlepšenie až na prepad úspešnosti triedy \textit{Jogging}, v ktorom úspešnoť od predchádzajúceho testu klesla o 17,5\%. Finálny počet príznakov na jeden vektor bol 240.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6PCA1g.png}
+  \caption{Test č. 4}
+  \label{test4}
+\end{figure} 
+
+\paragraph{5. Test} 
+V nasledujúcom teste sme iba zdvojnásobili počet vektorov príznakov videí (480 príznakov na video), aby sme mohli pomocou PCA vypočítať dvojnásobný počet príznakov ako v predchádzajúcom teste. Z výsledkov nám vyplynulo, že tento postup rozširovania počtu vektorov sa nám môže vyplatiť, keďže sa nám výsledky nezhoršili a v triede \textit{Waving} sme dokonca dostalo výsledok lepší o 2,5\%. 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6PCA2g.png}
+  \caption{Test č. 5}
+  \label{test5}
+\end{figure} 
+
+\paragraph{6. Test} 
+Test so štvornásobne zvýšeným počtom vektorov (960 príznakov na video) nám znovu priniesol zlepšenie v triede \textit{Waving} a to dokonca o celých 5\%. Vzhľadom na to, že sa nám výsledky stále zlepšovali, snažili sme sa ísť ešte ďalej.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6PCA4g.png}
+  \caption{Test č. 6}
+  \label{test6}
+\end{figure} 
+
+\paragraph{7. Test} 
+Siedmy test s osemnásobným zväčšením počtu vektorov (1920 príznakov na video) nám znovu vylepšil výsledky o 2,5\% pre triedy \textit{Clapping} a \textit{Waving}. Stále to nemalo žiaden negatívny vplyv na ostatné výsledky.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6PCA8g.png}
+  \caption{Test č. 7}
+  \label{test7}
+\end{figure} 
+
+\paragraph{8. Test}
+Pri teste, kde sme zvolili 12-násobné rozšírenie (2880 príznakov na video) počtu vektorov sa nám už zlepšovanie výsledkov zastavilo. Pri testoch sme namerali identické hodnoty, čo nám naznačovalo, že ďalšie zvyšovanie počtu vektorov nám už nebude naše výsledky vylepšovať.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6PCA12g.png}
+  \caption{Test č. 8}
+  \label{test8}
+\end{figure}  
+
+\paragraph{9. Test} 
+Ako sme sa predpokladali, výsledky pri 16-násobnom rozšírení sa vôbec nezlepšili, naopak, v triede \textit{Jogging} sme zaznamenali pokles o 2,5\% z úspešnosti. 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=14cm]{img/test6PCA16g.png}
+  \caption{Test č. 9}
+  \label{test9}
+\end{figure} 
+
+Pri tomto výsledku môžme povedať, že sme dosiahli maximum, ktoré sme mohli zvolenými metódami dosiahnuť. 
+
+\section{Porovnanie s existujúcimi riešeniami}
 
 
 

@@ -7,8 +7,8 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {lstlisting}{\numberline {4}Tr\IeC {\'e}novanie PCA}{24}{lstlisting.123}
 \defcounter {refsection}{0}\relax 
-\contentsline {lstlisting}{\numberline {5}Tr\IeC {\'e}novanie klasifik\IeC {\'a}tora}{25}{lstlisting.129}
+\contentsline {lstlisting}{\numberline {5}Tr\IeC {\'e}novanie klasifik\IeC {\'a}tora}{25}{lstlisting.128}
 \defcounter {refsection}{0}\relax 
-\contentsline {lstlisting}{\numberline {B.1}Test TSNE}{III}{lstlisting.148}
+\contentsline {lstlisting}{\numberline {B.1}Test TSNE}{III}{lstlisting.168}
 \defcounter {refsection}{0}\relax 
-\contentsline {lstlisting}{\numberline {C.1}Uk\IeC {\'a}\IeC {\v z}ka sublime-project}{V}{lstlisting.207}
+\contentsline {lstlisting}{\numberline {C.1}Uk\IeC {\'a}\IeC {\v z}ka sublime-project}{V}{lstlisting.227}
