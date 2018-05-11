@@ -59,3 +59,40 @@ plt.legend(handles=[navy_patch, turquoise_patch, dark_orange_patch, red_patch, g
  
 plt.show()
 \end{lstlisting}
+
+
+\begin{lstlisting}[
+  caption={Algoritmus získania prídavných príznakov},
+  label={FeatAdd},
+  language=python
+  ]
+  HEIGHT = 10 
+  WIDTH = 10
+  
+  def processImg(image, boxes):
+    count = 0
+    rowBoxNum = 120 / HEIGHT
+    colBoxNum = 160 / WIDTH
+    sumOfBox = 0
+    additionalVector = []
+    value = 0
+        
+    data = np.asarray(image.getdata()).reshape(image.size)
+    
+    for i in range(0, rowBoxNum):
+        for j in range(0, colBoxNum):
+            for row in range(i*HEIGHT, i*HEIGHT + HEIGHT):
+                for column in range(j*WIDTH, j*WIDTH + WIDTH):
+                    sumOfBox = sumOfBox + data[column][row] 
+                    count = count + 1
+            value =  float(sumOfBox)/(WIDTH*HEIGHT)/255
+            additionalVector.append(value)
+            sumOfBox = 0
+    return additionalVector
+]
+
+\end{lstlisting}
+
+
+
+

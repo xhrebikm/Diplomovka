@@ -1,1 +1,11 @@
-Conclusion is going to be where? \newline Here.
+Cieľom našej práce bolo vytvoriť systém, ktorý dokáže detekovať a rozpoznať pohyb osoby zo statického záznamu. 
+
+Zo začiatku sme sa snažili popísať teoretické vlastnosti a princípy rozpoznávania a detekcie ľudského pohybu, jednotlivé metódy a algoritmy, ako aj databázy videí na priblíženie tejto problematiky a našej konkrétnej implementácie.
+
+Na naše riešenie bola zvolená databáza KTH, v ktorej sa nachádzalo 6 typov pohybov. Tieto pohyby sme následne spracovávali pomocou metódy MHI, kde pre jedno video sme využili viacnásobné spracovanie MHI v rôznych časových úsekoch. Ďalším kľúčovým bodom bolo vyňatie prídavných príznakov z MHI pre záznam a spracovanie príznakov pomocou PCA, kde sme taktiež otestovali viacero konfigurácií a možností spracovania. Takto vypočítané príznaky sme následne natrénovali pomocou SVM a testovali úspešnosť. 
+
+Ukázalo sa, že pri viacnásobnom duplikovaní vektorov príznakov nám PCA vyhodnotilo lepšie výsledky ako využitie PCA na pôvodných vektoroch príznakov. Taktiež lepšie výsledky sa prejavili po využití troch MHI z videosekvencie, ktoré boli zachytené v rôznych časových úsekoch videa. 
+
+V konečnej časti sme odprezentovali naše výsledky prostredníctvom tabuliek a percentuálnych úspešností. Tieto výsledky sme porovnali s výsledkami rozpoznávania pomocou iných metód. 
+Na záver môžme povedať, že sa nám podarilo vytvoriť rozpoznávací systém, ktorého výsledky sú porovnateľné s inými metódami. Vidíme však priestor na ďalšie vylepšenia a aplikovanie iných a novších metód.
+

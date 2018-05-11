@@ -1,6 +1,6 @@
 \section{Použité technológie a prostredie}
 \subsection{OpenCV}
-\acrfull{OpenCV} bola pôvodne vydávaná firmou Intel, neskôr výskumným centrom Willow Garage, ktoré vyvíja open source softvér pre aplikácie na poli robotiky. Podporuje frameworky TensorFlow, Torch/PyTorch, Caffe. Knižnica je vydávaná pod BSD licenciou, čo umožňuje jej komerčné používanie. Táto knižnica obsahuje množstvo nástrojov a algoritmov na detekciu gest, identifikáciu objektov, segmentáciu a rozpoznávanie, spájanie obrazov, sledovanie pohybu, taktiež je vhodná pre implementáciu rozšírenej reality a strojového učenia. OpenCV je podporované v jazykoch C++, Python, Java, C a Matlab. Vývoj je umožnený na operačných systémov Windows, Android, Linux a Mac. \cite{c4}
+\acrfull{OpenCV} bola pôvodne vydávaná firmou Intel, neskôr výskumným centrom Willow Garage, ktoré vyvíja open source softvér pre aplikácie na poli robotiky. Podporuje frameworky TensorFlow, Torch/PyTorch, Caffe. Knižnica je vydávaná pod BSD licenciou, čo umožňuje jej komerčné používanie. Táto knižnica obsahuje množstvo nástrojov a algoritmov na detegovanie gest, identifikáciu objektov, segmentáciu a rozpoznávanie, spájanie obrazov, sledovanie pohybu, taktiež je vhodná pre implementáciu rozšírenej reality a strojového učenia. OpenCV je podporované v jazykoch C++, Python, Java, C a Matlab. Vývoj je umožnený na operačných systémov Windows, Android, Linux a Mac. \cite{c4}
 
 
 \subsection{FFmpeg}
@@ -59,7 +59,7 @@ Výber databázy realizujeme na základe vlastností jednotlivých videí. Vide�
 \item \textbf{počet objektov}
 \end{itemize}
 
-\textbf{Veľkosť} videa ovplyvňuje vo vysokej miere časový úsek určený na spracovanie videa. Z tohto dôvodu je vhodné hľadať databázy videí, ktorých videá majú menšiu veľkosť, čo priamo súvisí s ich rozlíšením, počtom snímkov za sekundu a dĺžkou. Nesmieme ale zabudnúť na to, že video musí byť zreteľné a pohyb detekovateľný.
+\textbf{Veľkosť} videa ovplyvňuje vo vysokej miere časový úsek určený na spracovanie videa. Z tohto dôvodu je vhodné hľadať databázy videí, ktorých videá majú menšiu veľkosť, čo priamo súvisí s ich rozlíšením, počtom snímkov za sekundu a dĺžkou. Nesmieme ale zabudnúť na to, že video musí byť zreteľné a pohyb detegovateľný.
 
 \textbf{Rozlíšenie} videa je dôležitým faktorom pre spracovnie z hľadiska kvality príznakov a snímkov. Zároveň jeho odporúčaná veľkosť sa líši od konkrétneho spôsobu extrakcie príznakov. Dôležité je, aby obraz konkrétnej aktivity na videu bol jasný a voľným okom rozpoznateľný.
 
@@ -99,7 +99,7 @@ Pre potrebu rozpoznávania pohybu osoby existuje viacero databáz, ktoré sme v 
 
 \textbf{WEIZMANN} obsahuje 10 tried pohybu, celkový počet videí je 90. Obsahujú triedy pohybu ako chôdza, beh, kývanie jednou alebo dvomi rukami, skok na mieste a iné. Videá sú natočené so statickou kamerou a pozadím  v interiéri  s rozlíšením 180 x 144. \cite{c1}
 
-\subsection{Možnosti spracovania obrazu}
+\subsection{Postup spracovania obrazu}
 Na získanie príznakov a potrebu klasifikácie pohybu analyzujeme a zvažujeme konkrétne spôsoby spracovania obrazu z videa. Pre tento účel berieme v úvahu algoritmus \acrfull{mhi} na extrakciu prvotných príznakov a následné spracovanie pomocou \acrfull{hog}. 
 
 Pre zosilnenie našich príznakov a zaručenie vyššej úspešnosti klasifikácie uvažujeme použitie \acrfull{pca}, ktoré taktiež urýchli trénovanie klasifikátora. Takto získané príznaky by sme následne vedeli natrénovať pomocou \acrfull{svm}. Z natrénovanej SVM vieme otestovať úspešnosť klasifikátora, ktorý sme získali a tým sa dostať ku výsledkom a porovnávaniam. 
@@ -107,6 +107,16 @@ Pre zosilnenie našich príznakov a zaručenie vyššej úspešnosti klasifikác
 \subsubsection{Motion History Image} \label{MHIlabel}
 \acrshort{mhi} je metódou, ktorá je založená na časovej šablóne. Je to jednoduchá metóda avšak robustná, vhodná na reprezentovanie a analýzu pohybu.\cite{c3}  Táto metóda bola prvýkrát popísaná v dokumente \textit{``An appearance-based representation of action''} od Aarona Bobicka a Jamesa W. Davisa.\cite{c2} Rozpoznávanie akcie pomocou MHI patrí do skupiny prispôsobovania šablóny. V MHI sa informácia pohybu v čase spája do jedného obrázku, kde intenzita pixelov je funkciou histórie pohybu na danej pozícii pixelu. MHI sa vypočítava pomocou aktualizačnej funkcie.\ref{MHIeq}
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{img/MHIudacity.png}
+  \caption{Priebeh videa a tvorba MHI}
+  \label{MHIuda}
+\end{figure}
+
+Z obrázku \ref{MHIuda} môžme jednoduchšie pochopiť akým spôsobom MHI pracuje. Jednotlivé snímky sú zoradené v čase akom boli nasnímané. V hornom riadku obrázkov vidíme neupravené snímky. Pod nimi je ekvivalent MHI obrázkov, ktoré sa kumulatívne spájali \textit{(Motion Energy Image}, teda nenesú informáciu o histórii daného pohybu, iba o tom, ktoré pixely sa menili a kde sa pohyb konal. 
+
+Z tohto riešenia je možné jednoducho odvodiť riešenie MHI, kde pri kumulovaní jednotlivých snímkov do jedného je uberaná intenzita všetkých pixelov v každej iterácii. Tento proces je zapísaný rovnicou na obrázku \ref{MHIeq}.
 
 \begin{figure}[H]
   \centering
@@ -128,74 +138,99 @@ To nám umožňuje zaznamenať pohyb z videa do jediného obrázku, v ktorom je 
 
 Na obrázku \ref{MHIclap} je príklad spracovaného pohybu z videa do MHI, na ktorom môžme vidieť pohyb tela pri akcii tlieskania.
 
-	 
-
 \subsubsection{Histogram of Oriented Gradients} \label{HOGlabel}
-HOG je metóda extrakcie príznakov z obrazu. Extrahuje príznaky z každej časti vstupného obrazu. Snaží sa zachytiť tvar štruktúry v regiónoch pomocou prechodov farieb jednotlivých pixelov. Rozdeľuje obraz na menšie spojené časti (napríklad 8 x 8 pixelov) a tie časti do ešte menších blokov z ktorých sa následne zostavuje histogram. Deskriptor je spojenie týchto histogramov. 
+Deskriptor vlastností je forma reprezentácie obrazu alebo jeho časti, ktorá zjednodušuje obraz extrakciou dôležitých informácií. Tento deskriptor premieňa obraz na pole, resp. vektor vlastností, v ktorom sa nachádzajú informácie o obraze. Vyberá informácie o obraze, ktoré sú potrebné a tie nepotrebné preskočí. 
 
-Každá z týchto častí  má rovnaký počet orientácií gradientu.  Pre zvýšenie presnosti môžu byť lokálne histogramy normalizované na základe kontrastu a výpočtom miery intenzít naprieč väčšími časťami obrazu, teda bloku. Táto normalizácia vedie k zvýšenej invariantnosti pri zmene osvetlenia alebo tienenia. 
+Tento deskriptor je užitočný  pre potreby detekcie a rozpoznávania obrazu, kde jeho vektor je vstupom pre klasifikačné algoritmy ako napríklad SVM. 
 
-HOG Deskriptor má výhody v tom, že pôsobí na lokálne bunky, je invariantný voči geometrickým a fotometrickým transformáciám. N. Dalal a B. Triggs zistili, že hrubé priestorové vzorkovanie, jemné vzorkovanie a silná lokálna fotometrická normalizácia umožňujú HOG deskriptoru vhodne detekovať ľudské bytosti v obrazoch. 
+HOG deskriptor (Histogram of oriented gradients) používa ako vektor príznakov rozdelenie smerov orientovaných gradientov. Tieto príznaky sú vešmi dobré na detekovanie hrán v obraze a poskytujú vhodné informácie o jeho vlastnostiach.
 
-\paragraph{Výpočet gradientu}
+\paragraph{Predpríprava a výpočet gradientu}
 
-Základným krokom pri HOG algoritme je výpočet gradientových hodnôt. Najbežnejšou metódou je aplikácia 1-D centrovanej diskrétnej masky v horizontálnom alebo aj vertikálnom smere. Táto metóda vyžaduje filtrovanie farieb alebo intenzitu obrazu s filtračnými jadrami.
+Vo väčšine prípadov je potrebné orezať obraz na časť, ktorú potrebujeme analyzovať s tým, že pomer jeho strán musí byť počas zmenšovania a orezávania zachovaný. 
 
-\paragraph{Histogram orientovaných gradientov}
-Ďalším krokom je vytvorenie histogramu orientovaných gradientov. Každý pixel v bunke pridáva svoju ováhovanú orientáciu pre orientovaný histogramový kanál, ktorý je vytvorený na základe výpočtu gradientov. Bunky môžu byť obdĺžníkového alebo radiálneho tvaru a histogramové kanály sú rozložené rovnomerne od 0 do 180 alebo 0 - 360 stupňov, záleží od toho, či gradienty môžu nadobúdať aj zápornú hodnotu, alebo nie. 
-
-Podľa výskumov  N. Dalala a B. Triggsa bolo zistené, že najvhodnejší počet kanálov na detekovanie osoby je 9 pri rozsahu 0 - 360 stupňov.
-
-\paragraph{Bloky deskriptorov}
-Na zohľadnenie zmien v osvetlení a kontraste musí byť intenzita gradientu lokálne normalizovaná, čo vyžaduje spoločné zoskupovanie buniek do väčších priestorovo prepojených blokov. HOG Deskriptor je následne spojený vektor komponentov normalizovaných histogramov buniek zo všetkých oblastí blokov. Tieto bloky sa prekrývajú, z čoho vyplýva, že každý jedna bunka prispieva viac ako raz do vytvorenia konečného deskriptora. Existujú dva hlavné tvary blokov:
-
-\begin{itemize}
-\item \textbf{R-HOG} (Rectangular HOG)
-\item \textbf{C-HOG} (Circular HOG)
-\end{itemize}
-
-
-\textbf{R-HOG} - sú štvorcové mriežky reprezentované tromi parametrami:
-\begin{itemize}
-\item počet buniek v bloku
-\item počet pixelov v bunke
-\item počet kanálov na histogram bunky
-\end{itemize}
-
-V práci N. Dalala a B. Triggsa je uvedené, že optimálne parametre sú štyri pixelové bunky s veľkosťou  8 x 8 na jeden blok (16 x 16 pixelov na blok)s deviatimi histogramovými kanálmi. Bolo taktiež zistené, že menšie vylepšenie vo výkonnosti môže byť nadobudnuté použitím Gaussovho priestorového okna v každom bloku pred zaznamenaním váhovaných histogramov. Lepšiemu výsledku by napomohlo to, že okrajové pixely by boli ováhované nižšími hodnotami. Viď obrázok \ref{HOGimg}.
-
-\textbf{C-HOG} - sú kruhové bloky, ktoré je možné použiť v dvoch variantoch. Jednou variantou je využitie jednej centrálnej bunky, pri druhej variante je táto bunka uhlovo rozdelená do rovnakých častí. Tieto bloky sú popísané štyrmi parametrami:
-
-\begin{itemize}
-\item počet uhlových buniek
-\item počet radiálnych buniek
-\item polomer stredovej bunky
-\item faktor expanzie pre polomer dodatočných radiálnych buniek
-\end{itemize}
-
-Podľa zistení N. Dalala a B. Triggsa najvhodnejšie zvoleným spôsobom je vytvorenie dvoch radiálnych buniek so štyrmi uhlovými bunkami, polomerom stredovej bunky 4 pixely a faktor expanzie s hodotou 2. Viď obrázok \ref{HOGimg}.
-
+Na výpočet HOG deskriptora je najprv nutné vypočítať horizontálne a vertikálne gradienty, následne je možné vypočítať histogram gradientov. Tento krok je jednoduché dosiahnuť pomocou filtrovania obrazu nasledovnými jadrami.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=14cm]{img/HOGimg.png}
-  \caption{R-HOG a C-HOG}
-  \label{HOGimg}
+  \includegraphics[width=12cm]{img/HOGkern.png}
+  \caption{Jadrá pre výpočet gradientov \cite{c20}}
+  \label{HOGkern}
 \end{figure}
 
-Na obrázku \ref{HOGimg} môžme vidieť ako vyzerá rozdelenie obrazu podľa R-HOG a C-HOG.
+Ďalej potrebujeme nájsť veľkosť a smer gradientov pomocou nasledovných vzťahov:
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=5cm]{img/HOGfunc.png}
+  \caption{Výpočet veľkosti a smeru gradientu \cite{c20}}
+  \label{HOGfunc}
+\end{figure}
+
+Kde $g$ je veľkosť gradientu a  $\theta$ je jeho smer.  $x,y$ sú osi jednotlivých gradientov, od ktorých sa odvíjajú. 
+
+Na obrázku bežca si ukážeme, ako takéto gradienty po výpočte vyzerajú.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{img/HOGboltg.png}
+  \caption{Originálny obraz transformovaný na gradienty \cite{c20}}
+  \label{HOGbolt}
+\end{figure}
+
+Na obrázku \ref{HOGbolt} môžme vidieť transformáciu originálneho obrazu na absolútnu hodnotu gradientu osi x, vedľa nej absolútnu hodnotu gradientu y a napravo veľkosť gradientu.
+Gradient osi x na obrázku zaznamenal vertikálne čiary bežeckej trate, gradient osi y zase horizontálne hodnoty. Veľkosť gradientu zaznamenáva každú ostrú zmenu intenzity jednotlivých pixelov. Pokiaľ sú časti obrazu plynulé, žiadne dôležité informácie nie sú zachytené. 
+Obraz gradientu eliminuje nedôležité informácie v obraze, čo môžme demonštrovať tým, že aj na takomto obraze gradientov môžme rozpoznať, že ide o bežiacu osobu.
+
+\paragraph{Výpočet gradientov po bunkách}
+
+V tomto kroku môžme obraz rozdeliť do buniek o veľkosti  8 x 8 pixelov, pre ktoré bude histogram gradientov počítaný osobitne pre každú bunku.
+
+Výpočet po bunkách je dôležitým krokom na redukovanie objemu dát, pretože pre každý pixel v bunke máme dokopy\textit{ 8 pixelov x 8 pixelov x 3 kanály obrazu hodnôt }(192) a zároveň \textit{8 pixelov x 8 pixelov x 2 hodnoty (veľkosť a smer gradientu)} (128). Ukážeme si, že pomocou redukcie uhlov do 9tich smerových kategórií vieme týchto 128 hodnôt uložiť ako 9 hodnôt. Reprezentácia takýmto spôsobom je kompaktnejšia, zároveň je odolnejšia voči šumu v obraze. 
+
+Histogram gradientu je vlastne vektor deviatich smerových kategórií, ktoré zoskupuje podľa uhla, ktorý gradient má. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{img/HOGgrad.png}
+  \caption{Príklad veľkostí a smerov gradientov \cite{c20}}
+  \label{HOGgrad}
+\end{figure}
+Na obrázku \ref{HOGgrad} môžme vidieť znázornenie vypočítaných hodnôt gradientu bunky \textit{8 x 8}. Na obrázku v strede môžme vidieť jednotlivé pixely obrázku a gradienty, ktoré majú svoju veľkosť a smer. Na pravej strane obrázku hore sú veľkosti gradientov jednotlivých pixelov a dole sú ich smery v stupňoch. Stupne sú určené v rozmedzí 0 - 180 (bezznamienkový), aj keď je možné využiť aj interval 0 - 360 stupňov (znamienkový) . To všetko závisí od toho, či používame gradienty so znamienkom alebo bez. Výhodou používania 180 stupňového intervalu je, že bezznamienkové gradienty sú úspešnejšie pre potreby detekcie pohybu osoby. 
+
+Ďalším krokom je vytvorenie HOG v konkrétnych bunkách napríklad o rozmere \textit{8 x 8}. Histogram bude obsahovať 9 skupín pre každý 20-ty stupeň z rozmedzia 0 - 180 stupňov \textit{( 0, 20, 40, 60 ... 160)}. 
+
+Následne sa rozdeľovanie do jednotlivých skupín prebieha ako na obrázku \ref{HOGbins}. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=16cm]{img/HOGbins.png}
+  \caption{Rozdeľovanie veľkostí gradientov podľa orientácie \cite{c20}}
+  \label{HOGbins}
+\end{figure}
+
+
+Môžme vidieť, že skupina kam ide veľkosť gradientu sa vyberá podľa  jeho orientácie. Gradient v modrom je zaradený do skupiny 80 pretože má orientáciu 80 stupňov a je priradená hodnota 2, pretože je to jeho dĺžka. Pri gradiente v červenom kruhu je hodnota rozdelená medzi skupiny 0 a 20, keďže orientácia gradientu je 10, rozdelí sa veľkosť na dve rovnaké časti. V prípade, že by sme mali orientáciu gradientu 170 stupňov s veľkosťou 85, rozdelila by sa jeho veľkosť medzi skupinu 0 a 160 taktiež v pomere 1:1.
+Takto máme vytvorený prvý histogram.
+
+
 
 \paragraph{Normalizácia blokov}
-Sú štyri rôzne spôsoby normalizácie blokov, ktoré sú popísané na obrázku \ref{HOGnorm}.
+Normalizovanie blokov je potrebné na to, aby bol deskriptor nezávislý na zmene svetelnosti obrazu. Takáto normalizácia sa vypočíta následovne
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=14cm]{img/HOGnorm.png}
-  \caption{Metódy normalizácie}
-  \label{HOGnorm}
+  \includegraphics[width=6cm]{img/HOGL2.png}
+  \caption{Výpočet L2 normy\cite{c20}}
+  \label{HOGL2}
 \end{figure}
 
-Schéma \textbf{\textit{L2-hys}} môže byť vypočítaná z \textbf{\textit{L2-norm}}, kde sa výsledok renormalizuje pre vektor \textit{v < 0.2}. Všetky štyri normy majú výrazne lepšie výsledky ako nenormalizované dáta. Tieto údaje sú následne použiteľné ako vektor príznakov pre SVM. \cite{c11}
+Takto vypočítaná hodnota sa nazýva \textit{L2-norma}. Vydelené zložky RGB pixelu touto normou sú normalizované, teda z intervalu \textit{<0,1>}. Teda to nám eliminuje zmeny hodnôt pre pixely, ktoré boli napríklad dvojnásobne zosvetlené. 
+
+Tak ako sme normalizovali každú zložku, je potrebné normalizovať aj zložky celého histogramu. Na to sa používa normalizácia väčších blokov aj s prekrytím \footnote{napríklad veľkosť bloku je 16 a posun bude po 8 pixelov}. 
+
+Z takto získaných príznakov vieme získať finálny HOG vektor príznakov tým, že spojíme čiastkové vektory.
+\cite{c11}\cite{c20}
 
 
 \subsubsection{Principal Component Analysis} \label{PCAlabel}
@@ -203,49 +238,92 @@ Analýza hlavných komponentov (angl. Principal Components Analysis) je metóda 
 
 Dôležitou súčasťou v PCA sú vlastné vektory. Sú to nenulové vektory, ktorých smer sa po transformácii pomocou lineárneho operátora nemení, pojem vlastný vektor v PCA obmieňame za hlavný komponent. 
 
-V Computer Vision má táto metóda veľmi dobrý vplyv na dáta charakterizujúce rôzne špecifické tvary, objekty, keďže nám umožňuje zosilniť význam príznakov, ktoré sú pre daný problém dôležité, a tie, ktoré nie sú potrebné, dokáže eliminovať. Táto transformácia teda zvyšuje varianciu hlavných komponentov naprieč všetkými lineárnymi kombináciami vektora, čo napomáha zvyšovať úspešnosť klasifikátora pri riešení rozpoznávania na extrakciu príznakov. Túto metódu navrhol v roku 1901 matematik anglického pôvodu Karl Pearson. Jej rôzne obmenené a vylepšené verzie sa využívajú dodnes v štatistike, \textit{Computer Vision}, robotike a ďalších smeroch.
+V počítačovom videní má táto metóda veľmi dobrý vplyv na dáta charakterizujúce rôzne špecifické tvary, objekty, keďže nám umožňuje zosilniť význam príznakov, ktoré sú pre daný problém dôležité, a tie, ktoré nie sú potrebné, dokáže eliminovať. Táto transformácia teda zvyšuje varianciu hlavných komponentov naprieč všetkými lineárnymi kombináciami vektora, čo napomáha zvyšovať úspešnosť klasifikátora pri riešení rozpoznávania na extrakciu príznakov. Túto metódu navrhol v roku 1901 matematik anglického pôvodu Karl Pearson. Jej rôzne obmenené a vylepšené verzie sa využívajú dodnes v štatistike, \textit{počítačovom videní}, robotike a ďalších smeroch.
 
-Pomocou Jordanovej dekompozičnej vety o symetrických maticiach môžme symetrické štvorcové matice zapísať v nasledovnom tvare, ktorý je na obrázku \ref{PCAJord} \cite{c15} \cite{c16}.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=10cm]{img/PCA.png}
-  \caption{Grafické znázornenie PCA \cite{c19}}
-  \label{PCA}
-\end{figure}
-Na obrázku \ref{PCA} môžme vidieť vlastné vektory, resp. hlavné komponenty PCA analýzy.
+\paragraph{Variancia}
+Variancia kóduje informácie, ktoré obsahujú jednotlivé dáta. V dvojrozmernom priestore je potrebné pre \textit{n} bodov mať \textit{2n} čísel, ktoré nám reprezentujú tieto dáta. Na obrázku \ref{PCAgraph} môžme vidieť dva smery maximálnej variancie. Modrá čiara reprezentuje smer, kde je najviac informácií, tento smer je prvý hlavný komponent. Druhý hlavný komponent, ktorý je označený zelenou farbou, je smer variancie kolmý na smer prvého hlavného komponentu, kde je v tomto smere najväčší rozptyl dát. V 2D priestore existujú iba dva hlavné komponenty. Koľko dimnezií má priestor, toľko môže byť maximálne množstvo hlavných komponentov.  
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=16cm]{img/PCAjordan.png}
-  \caption{Definícia Jordanovej matice}
-  \label{PCAJord}
+  \includegraphics[width=6cm]{img/PCAgraph.png}
+  \caption{HLavné komponenty v grafe \cite{c21}}
+  \label{PCAgraph}
 \end{figure}
 
-Z tejto matice následne vieme vypočítať vektor hlavných komponentov, viď obrázok \ref{PCAhlav}.
+\paragraph{Redukcia dimenzie}
+Hlavným cieľom PCA je redukcia dimenzie. TO znamená, že dáta z 3D priestoru chceme reprezentovať v dvojrozmernom priestore. Princíp spočíva v tom, že ak máme  3D priestor s tromi hlavnými komponentami, môžme zarovnať osi tohto priestoru podľa hlavných komponentov, čím reprezentujeme tie isté dáta v inom súradnicovom systéme. Ak odstránime dimenziu, kde je tretí a teda najmenší hlavný komponent, stále nám ostanú dva hlavné komponenty s relevantnými dátami na ich reprezentáciu. Tento prístup napomáha pri vysokom počte dimenzií. Znížením dimenzie je možné filtrovať dátový šum a tak získať presnejší výsledok. 
+
+\paragraph{Vlastné vektory a hodnoty matice}
+Vlastný vektor matice je vektor, ktorého smer sa pri násobení nemení. 
+Teda platí $ Av = \lambda v $ kde $A$ je matica,  $v$ je vektor a  $\lambda$ je skalárna veličina (číslo).
+
+Pri takomto násobení sa mení veľkosť vektora $v$ a smer ostáva zachovaný.
+
+\paragraph{Výpočet PCA}
+Pre výpočet PCA je potrebné vložiť vytvorené dátové body do matice, v ktorej každý stĺpec reprezentuje jeden dátový bod. Teda pre trojrozmerný priestor, kde je \textit{n} bodov bude mať matica \textit{3} stĺpce a \textit{n} riadkov ako na obrázku \ref{PCAdatamx}. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=16cm]{img/PCAhlavnekomponenty.png}
-  \caption{Výpočet hlavných komponentov}
-  \label{PCAhlav}
+  \includegraphics[width=6cm]{img/PCAdatamx.png}
+  \caption{3D matica dát \cite{c21}}
+  \label{PCAdatamx}
 \end{figure}
-\cite{c17}
 
-Redukciou dimenzie vieme dosiahnúť aj kratšiu dobu trénovania klasifikátora ako aj jeho vyššiu úspešnosť. 
+Po vytvorení takejto matice je potrebné vypočítať priemer všetkých dátových bodov, teda koľko rozmerov, toľko priemerov. Tie sa vypočítajú ako súčet všetkých hodnôt v rozmere vydelený ich počtom. \ref{PCAmean}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=3cm]{img/PCAdatamean.png}
+  \caption{Výpočet priemerov dátových bodov\cite{c21}}
+  \label{PCAmean}
+\end{figure}
+
+Na základe priemeru sa vytvorí matica, v ktorej hodnoty sa vypočítajú ako hodnota v matici \textit{D} zmenšená o hodnotu priemeru \ref{PCAdatamx2}. Po získaní tejto matice môžme získať jednoducho kovariančnú maticu, z ktorej vieme získať roztyl dát. Diagonála kovariančnej matice obsahuje variancie osí X, Y a Z, hodnoty mimo diagonály určujú kovarianciu medzi dvomi dimenziami (X, Y alebo Y, Z alebo Z, X). 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=9cm]{img/PCAdatamx2.png}
+  \caption{3D matica priemerov\cite{c21}}
+  \label{PCAdatamx2}
+\end{figure}
+
+Kovariančná matica sa vypočíta ako $C = MM^T$, kde $M^T$ je transponovan8 matica $M$. Rozmer matice \textit{C} je \textit{m * m}, kde \textit{m} je počet dimenzií.
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=17cm]{img/PCAdatacompare.png}
+  \caption{Porovnanie kovariančných matíc pre rôzne rozptyly dát\cite{c21}}
+  \label{PCAcmp}
+\end{figure}
+
+Na obrázku \ref{PCAcmp} môžme vidieť ako sa mení kovariančná matica v závislosti od rozptylu dát.
+Na prvej časti obrázku sú dáta rozptýlené rovnako všetkými smermi, teda kovariančná matica má na diagonále rovnaké hodnoty. Na strednom obrázku môžme vidieť, že hodnoty sú natiahnuté v smere osi \textit{y}, diagonála kovariančnej matice nemá rovnaké hodnoty. Na poslednej časti obrázku sú hodnoty rozptýlené v 45-stupňovom uhle, diagonálne hodnoty kovariančnej matice sú rovnaké ako aj hodnoty mimo diagonály.\cite{c21}
 
 
 \subsubsection{Support Vector Machine} \label{SVMlabel}
 SVM je metóda strojového učenia s učiteľom, je vhodná na používanie pri klasifikácii alebo regresnej analýze. Táto metóda na základe trénovacích vzoriek, ktoré sú priradené do jednej z dvoch tried vytvorí model. Tento model je následne schopný priraďovať nové vzorky do jednej z týchto tried, čo z neho robí nepravdepodobnostný binárne lineárny klasifikátor. SVM model reprezentuje vzorky ako body v priestore, tak, že mapuje jednotlivé vstupy do kategórií, ktoré sú v tomto priestore jasne oddelené. Klasifikátor priraďuje nové vzorky podľa toho, ku ktorej z tried majú bližšie v rámci tohto priestoru.
 
-Okrem lineárnej klasifikácie je SVM schopné efektívne riešiť aj nelineárne separovateľné problémy pomocou takzvaného kernel triku. Pokiaľ dáta nie sú pri trénovaní označené, do ktorej kategórie patria, učenie s učiteľom nie je možné, avšak je možné učenie bez učiteľa tak, že algoritmus sa snaží nájsť prirodzené zoskupenie dát a tak ich rozdeliť do kategórií.
+Okrem lineárnej klasifikácie je SVM schopné efektívne riešiť aj nelineárne separovateľné problémy pomocou takzvaného jadrového triku \textit{(angl. Kernel trick)} tým, že rozšíri dimenzionalitu dát. Pokiaľ dáta nie sú pri trénovaní označené, do ktorej kategórie patria, učenie s učiteľom nie je možné, avšak je možné učenie bez učiteľa tak, že algoritmus sa snaží nájsť prirodzené zoskupenie dát a tak ich rozdeliť do kategórií.
+
+Medzi najčastejšie používané jadrové funkcie patria:
+
+\begin{itemize}
+\item \textbf{Polynóm stupňa \textit{p}}
+\item $  K(x,y) = (x.y + 1)^p $
+\item \textbf{Radiálne bázové funkcie}
+\item $   K(x,y) = e^{(-\|x-y\|^2/2\sigma^2)}  $
+\item \textbf{Dvojvrstvová neurónová sieť }
+\item $   K(x,y) = \tanh(\kappa x.y - \delta)  $
+\end{itemize}
 
 SVM algoritmus vytvorili Hava Siegelmann a Vladimir Vapnik. Tento algoritmus má široké využitie a je používaný v priemyselných aplikáciách, počítačovom videní, umelej inteligencii.  \cite{c7}
 
 \paragraph{Definícia algoritmu}
 SVM vytvára hyperrovinu \footnote{Podpriestor, ktorý má o jednu dimenziu menej ako priestor, v ktorom sa nachádza.}, alebo viacero hyperrovín, vo vysokorozmernom priestore, ktorý môže byť použitý na klasifikáciu, regresiu alebo iné úlohy. Dobrá separácia sa dosiahne vtedy, keď hyperrovina má veľkú vzdialenosť od najbližšieho trénovacieho bodu akejkoľvek triedy. Teda platí, čím je väčšia vzdialenosť hyperroviny od trénovacích údajov, tým je nižšia chyba klasifikátora pri určovaní triedy testovacej vzorky.\cite{c12}
 
-Keďže nie všetky problémy je možné lineárne separovať, bolo navrhnuté, aby sa priestor, ktorý SVM spracováva rozvrhol do viacrozmerného priestoru, čo uľahčí rozdelenie jednotlivých dát do tried. Pre zanechanie výpočtovej rýchlosti je mapovanie v SVM navrhnuté v pôvodnom priestore, kde sa následne zvolí vhodná kernelová funkcia $ k(x,y)$ . 
+Keďže nie všetky problémy je možné lineárne separovať, bolo navrhnuté, aby sa priestor, ktorý SVM spracováva rozvrhol do viacrozmerného priestoru, čo uľahčí rozdelenie jednotlivých dát do tried. Pre zanechanie výpočtovej rýchlosti je mapovanie v SVM navrhnuté v pôvodnom priestore, kde sa následne zvolí vhodná jadrová funkcia $ k(x,y)$ . 
 Hyperroviny vo viacrozmernom priestore sú definované ako súbory bodov, kde ich vektory majú konštantnú dĺžku. Následne body z priestoru príznakov sú mapované do hyperroviny. 
 
 \paragraph{Lineárny klasifikátor}
@@ -260,7 +338,7 @@ Najjednoduchšou možnosťou použitia SVM je prípad lineárneho klasifikátora
 
 
 \paragraph{Nelineárny klasifikátor}
-Na obrázku č. \ref{SVMobr} môžme vidieť lineárne neseparovateľný problém dvoch množín, ktorý sa po pridaní tretej dimenzie stáva lineárne separovateľný. Takýmto spôsobom dokážeme s SVM zatriediť jednotlivé videá z množín do správnych tried. Transformácia do vyššierozmerného priestoru sa nazýva jadrový trik \textit{(angl. kernel trick)}. Pomocou tohto triku vieme lineárne separovať aj lineárne neseparovateľné problémy.\cite{c12}
+Na obrázku č. \ref{SVMobr} môžme vidieť lineárne neseparovateľný problém dvoch množín, ktorý sa po pridaní tretej dimenzie stáva lineárne separovateľný. Takýmto spôsobom dokážeme s SVM zatriediť jednotlivé videá z množín do správnych tried. Pomocou jadrového triku vieme lineárne separovať aj lineárne neseparovateľné problémy.\cite{c12}
 
 \begin{figure}[H]
   \centering
@@ -269,23 +347,10 @@ Na obrázku č. \ref{SVMobr} môžme vidieť lineárne neseparovateľný problé
   \label{SVMobr}
 \end{figure}
 
-Medzi najčastejšie používané jadrové funkcie patria:
-
-\begin{itemize}
-\item \textbf{Polynóm stupňa \textit{p}}
-\item $  K(x,y) = (x.y + 1)^p $
-\item \textbf{Radiálne bázové funkcie}
-\item $   K(x,y) = e^{(-\|x-y\|^2/2\sigma^2)}  $
-\item \textbf{Dvojvrstvová neurónová sieť }
-\item $   K(x,y) = \tanh(\kappa x.y - \delta)  $
-\end{itemize}
-
-
-
 \newpage
 
 \section{Návrh riešenia}
-Po oboznámení s teoretickými piliermi tejto práce prejdeme ku konkrétnemu riešeniu témy a implementácii, ktorú sa nám podarilo vytvoriť. Postupne prejdeme jednotlivé kroky vytvárania programu od analýzy datasetov, načítavania a ukladania videosekvencií do obrázkových formátov. Ďalej si ukážeme metódy a spôsoby, ktorými sme následne vzniknuté dáta spracovali pre potrebu výberu príznakov a zatriedenia do jednotlivých tried. Fungovanie programu priblížime aj časťami kódu s popisom, na čo slúži a ako pracuje. Súčasťou tejto kapitoly bude aj krátky popis zmien, ktoré sme počas návrhu tejto implementácie vykonali a samozrejme aj ich dopad na finálne riešenie.
+Po oboznámení s teoretickými piliermi tejto práce prejdeme ku konkrétnemu riešeniu témy a implementácii, ktorú sa nám podarilo vytvoriť. Postupne prejdeme jednotlivé kroky vytvárania programu od analýzy datasetov, načítavania a ukladania videosekvencií do obrazových formátov. Ďalej si ukážeme metódy a spôsoby, ktorými sme následne vzniknuté dáta spracovali pre potrebu výberu príznakov a zatriedenia do jednotlivých tried. Fungovanie programu priblížime aj časťami kódu s popisom, na čo slúži a ako pracuje. Súčasťou tejto kapitoly bude aj krátky popis zmien, ktoré sme počas návrhu tejto implementácie vykonali a samozrejme aj ich dopad na finálne riešenie.
 
 \subsection{KTH Databáza}
 Pre naše riešenie sme vyberali z viacerých datasetov, ktoré boli popísané v kapitole \ref{dbludskeho}. Nakoniec sme sa rozhodli pre databázu KTH, v ktorej máme 6 tried pohybu a nachádza sa pri každom z nich 100 videí. Naše rozhodnutie sme učinili takto z viacerých dôvodov. Potrebovali sme dataset, v ktorom sa nachádza veľké množstvo videí, zároveň vo videách sme potrebovali statickú kameru so statickým pozadím, aby sme predišli zvýšenému šumu. V tejto databáze sú pohyby:
@@ -313,57 +378,19 @@ Na obrázku \ref{KTHobr} vidíme všetky kategórie pohybov, jednotlivé pohyby 
 \subsection{Predspracovanie videa}
 Na predspracovanie videa a vytiahnutie prvotných príznakov sme sa rozhodli z našich videí vytvoriť obrázky, na ktorých sa bude nachádzať história pohybu. Algoritmus MHI, ktorý sme pri tom použili sme popísali v časti \ref{MHIlabel}. Tento algoritmus sme zvolili na základe toho, že máme databázu videí bez pohyblivého pozadia, teda predídeme šumom na pozadí a budeme sa môcť venovať iba pixelom, ktoré menia svoju pozíciu v rámci videa. Presne to je postačujúca podmienka na to, aby sme bez väčších problémov mohli implementovať funkcionalitu algoritmu MHI na nami zvolený dátový rozsah. Vytvoriť MHI sme sa rozhodli zo všetkých videí, aby sme následne videli, akým spôsobom prebehlo spracovanie, či je možné z MHI vyčítať pohyb a jeho základné znaky. 
 
-\begin{lstlisting}[
-  caption={Algoritmus MHI},
-  label={MHIcreate},
-  language=python
-]
-def getImage(cam, video_src, vidDir):
-  while True:    
-    ret, frame = cam.read()
-    h, w = frame.shape[:2]
-    prev_frame = frame.copy()
-    motion_history = np.zeros((h, w), np.float32)
-    timestamp = 0
-    while True:
-      frame_num = frame_num + 1
-      ret, frame = cam.read()
-      if not ret:
-        break
-      frame_diff = cv2.absdiff(frame, prev_frame)
-      gray_diff = cv2.cvtColor(frame_diff, cv2.COLOR_BGR2GRAY)
-      ret, fgmask = cv2.threshold(gray_diff, DEFAULT_THRESHOLD, 1, cv2.THRESH_BINARY)
-      timestamp += 1
-      # update motion history
-      cv2.motempl.updateMotionHistory(fgmask, motion_history, timestamp, MHI_DURATION)
-      # normalize motion history
-      mh = np.uint8(np.clip((motion_history-(timestamp-MHI_DURATION)) / MHI_DURATION, 0, 1)*255)
-      cv2.imshow('motempl', mh)
-      print frame_num
-      if frame_num == 160:
-          frame_num = 0
-          imagename = video_src[0:-4] + '.jpg'
-          cv2.imwrite(MHI_dir + '\\' + vidDir + '\\' + imagename, mh)
-          return
-\end{lstlisting}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=17cm]{img/actMHIsnimok.png}
+  \caption{Diagram aktivity získania MHI}
+  \label{MHIcreate}
+\end{figure}  
 
 
-V tejto ukážke \ref{MHIcreate} kódu je celý proces čítania videa a jeho jednotlivých snímkov za sebou so spracovaním na MHI. Funkcia \textit{getImage} obsahuje tri vstupné parametre:
-\begin{itemize}
-\item \textbf{cam}
-\item \textbf{video\_src}
-\item \textbf{vidDir}
-\end{itemize}
-
- \textbf{\textit{cam}}, čo je objekt typu \textbf{\textit{VideoCapture}}, ktorý sa ďalej spracováva po jednotlivých snímkoch. 
- Parameter \textbf{\textit{video\_src}} je názov videosúboru, ktorý sme použili na uloženie obrázku z videa.
- \textbf{\textit{vidDir}} je názov priečinku, v ktorom sa obrázok MHI bude ukladať. 
- Na čítanie snímkov sme použili knižnicu OpenCV, ako aj na spracovanie jednotlivých snímkov do MHI. Dôležitými parametrami, ktoré sme nastavovali boli \textit{frame\_num}, ktorý nám označoval počet prehratých snímkov, pri ktorom sme uložili vyhotovené MHI, ďalej to bol \textit{DEFAULT\_TRESHOLD}, ktorý nám filtroval nepotrebné pixely s veľmi nízkou hodnotou, pri trénovaní a testovaní sme zistili, že pixely s hodnotou nižšou ako \textit{\textbf{50}} bude vhodné neriešiť a ponechať ich ako čierne body. Akonáhle bol tento parameter vyšší alebo nižší, obrázky už neboli až tak dobre vyhodnocované. Ďalším dôležitým parametrom je \textit{MHI\_DURATION}. Tento parameter nám vymedzuje dĺžku histórie pohybu v jednotke \textit{timestamp}, akú má snímať. Čím je hodnota vyššia, tým dlhšia história pohybu je na finálnom MHI zaznamenaná. 
- Pre naše potreby sme zvolili tento parameter na hodnotu \textit{\textbf{80}}.
+V tejto ukážke \ref{MHIcreate} diagramu aktivít je znázornený proces získavania MHI snímky z našej implementácie. Prvým krokom je načítanie videa, z ktorého následne vyberáme po jednom obrázku. Z každého obrázku vytvárame MHI z predchádzajúcich snímkov. V tomto konkrétnom prípade opakujeme cyklus dovtedy, kým nezískame MHI zo snímku číslo 100, ktoré predstavuje štvrtú sekundu pohybu (25 snímkov za sekundu). V prípade, že nám príde snímok číslo 100, prejdeme na jeho uloženie na lokálny disk, kde bude pripravený na ďalšie spracovanie. 
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=15cm]{img/MHIbox.png}
+  \includegraphics[width=16cm]{img/MHIbox.png}
   \caption{Predspracované videá boxu.}
   \label{MHIbox}
 \end{figure}  
@@ -374,31 +401,8 @@ Na obrázku \ref{MHIbox} môžme vidieť príklad už predspracovaných MHI pros
 Keďže už máme predspracovaný obraz vo forme MHI, môžme pokračovať v extrahovaní príznakov z týchto obrazov. Na tento účel sme zvolili deskriptor HOG popísaný v časti \ref{HOGlabel}. Týmto spôsobom vytvoríme vektor príznakov, ktorý budeme môcť následne spracovať prostredníctvom PCA a tak ho dať trénovať do klasifikátora pre každý jeden pohyb z trénovacej množiny. Príznaky z každého MHI obrázku by mali byť v tvare vektora konštantnej dĺžky. 
 
 \subsubsection{Príznaky HOG} \label{HOGim}
-\begin{lstlisting}[
-  caption={Algoritmus HOG},
-  label={HOGcreate},
-  language=python
-]
-image = cv2.imread('image.jpg', 0)
 
-def hogCreate(image):
-    winSize = (64,64)
-    blockSize = (16,16)
-    blockStride = (8,8)
-    cellSize = (8,8)
-    nbins = 9
-    winSigma = 4.
-    gammaCorrection = 0
-    nlevels = 64
-    hog = cv2.HOGDescriptor(winSize, blockSize, blockStride, cellSize, nbins, winSigma,            gammaCorrection,nlevels)
-    winStride = (8,8)
-    padding = (8,8)
-    locations = ((10,20),)
-    hist = hog.compute(image,winStride,padding,locations)
-    arrVectorFinal.append(np.concatenate(hist))
-\end{lstlisting}
-
-V tomto algoritme \ref{HOGcreate} vstupuje do funkcie \textit{hogCreate} parameter \textit{image} je vlastne obrázkom, ktorý je výstupom funkcie   \textit{imread} z knižnice OpenCV. Pre dobré vybratie príznakov je potrebné nastaviť a vytvoriť \textit{HOGDescriptor}, ktorý obsahuje viacero parametrov:
+V našom algoritme na získanie HOG príznakov vstupuje do funkcie \textit{hogCreate} parameter \textit{image} je vlastne obrázkom, ktorý je výstupom funkcie   \textit{imread} z knižnice OpenCV. Pre dobré vybratie príznakov je potrebné nastaviť a vytvoriť \textit{HOGDescriptor}, ktorý obsahuje viacero parametrov:
 
 \begin{itemize}
 \item winSize
@@ -439,39 +443,9 @@ Po takomto nastavení deskriptora HOG môžme následne spracovať vstupný obra
 
 Tieto dva parametre je potrebné určiť ako delitele šírky (160px) a delitele výšky (120px) MHI obrázkov. V našej implementácii sme využili šírku a výšku s hodnotou 10.
 
-\begin{lstlisting}[
-  caption={Prídavné príznaky},
-  label={FeatAdd},
-  language=python
-  ]
-  HEIGHT = 10 
-  WIDTH = 10
-  
-  def processImg(image, boxes):
-    count = 0
-    rowBoxNum = 120 / HEIGHT
-    colBoxNum = 160 / WIDTH
-    sumOfBox = 0
-    additionalVector = []
-    value = 0
-        
-    data = np.asarray(image.getdata()).reshape(image.size)
-    
-    for i in range(0, rowBoxNum):
-        for j in range(0, colBoxNum):
-            for row in range(i*HEIGHT, i*HEIGHT + HEIGHT):
-                for column in range(j*WIDTH, j*WIDTH + WIDTH):
-                    sumOfBox = sumOfBox + data[column][row] 
-                    count = count + 1
-            value =  float(sumOfBox)/(WIDTH*HEIGHT)/255
-            additionalVector.append(value)
-            sumOfBox = 0
-    return additionalVector
-]
 
-\end{lstlisting}
 
-V algoritme \ref{FeatAdd} je vo funkcii \textit{processImg} na vstupe obrázok MHI (\textit{image} a počet okien pixelov s rozmermi 10 x 10 pixelov na jeden obrázok. Obraz sme si pre zjednodušenie vložili do \textit{NumPy} poľa a následne iterovali. Aby sme získali normalizovaný príznak \textit{(z rozmedzia <0,1>)}, potrebovali sme vydeliť hodnotu príznaku z jedného okna hodnotou \textit{255}, keďže každý pixel nadobúda hodnoty\textit{<0,255>} podľa svietivosti pixelu.
+V nami vtvorenom algoritme je vo funkcii na získanie prídavných príznakov na vstupe obrázok MHI a počet okien pixelov s rozmermi 10 x 10 pixelov na jeden obrázok. Obraz sme si pre zjednodušenie vložili do \textit{NumPy} poľa a následne iterovali. Aby sme získali normalizovaný príznak \textit{(z rozmedzia <0,1>)}, potrebovali sme vydeliť hodnotu príznaku z jedného okna hodnotou \textit{255}, keďže každý pixel nadobúda hodnoty\textit{<0,255>} podľa svietivosti pixelu.
 
 \begin{figure}[H]
   \centering
@@ -517,7 +491,7 @@ Po naprogramovaní všetkých základných častí nášho projektu sme potrebov
 
 
 \subsubsection{t-SNE}
-Aby sme vedeli výsledok trénovania našej SVM, potrebovali sme výsledky vizualizovať, ako prebehlo rozdelenie do tried. Na to sme využili testovací nástroj \textit{\acrfull{tsne}}, ktorého algoritmus nájdete v prílohe \ref{att:B}. Tento algoritmus umožňuje vizualizáciu viacrozmerných dát do 2D priestoru. Túto techniku je možné implementovať pomocou aproximácií, ktoré môžu byť aplikované na datasety obrovských rozmerov. Autorom tohto algoritmu je \textbf{\textit{Laurens van der Maaten}}, ktorý pôsobí ako výskumný pracovník na poli strojového učenia a počítačového videnia. t-SNE implementoval pre množstvo jazykov vrátane jazyka Python, takže sme nemali problém tento nástroj využívať. \cite{c18}
+Aby sme vedeli výsledok trénovania našej SVM, potrebovali sme výsledky vizualizovať, ako prebehlo rozdelenie do tried. Na to sme využili metódu založenú na redukcii dimenzií \textit{\acrfull{tsne}}, ktorej algoritmus nájdete v prílohe \ref{att:B}. Tento algoritmus umožňuje vizualizáciu viacrozmerných dát do 2D priestoru. Túto techniku je možné implementovať pomocou aproximácií, ktoré môžu byť aplikované na datasety obrovských rozmerov. Autorom tohto algoritmu je \textbf{\textit{Laurens van der Maaten}}, ktorý pôsobí ako výskumný pracovník na poli strojového učenia a počítačového videnia. t-SNE implementoval pre množstvo jazykov vrátane jazyka Python, takže sme nemali problém tento nástroj využívať. \cite{c18}
 
 
 
@@ -664,7 +638,71 @@ Pri tomto výsledku môžme konštatovať, že výsledky sú uspokojujúce až n
 
 
 
-\section{Porovnanie s existujúcimi riešeniami}
+
+\section{Porovnanie s existujúcim riešením}
+Pre porovnanie nášho riešenia sme si vybrali prácu, v ktorej pracovali s tou istou databázou videí ako my v našej práci. V porovnávanom riešení využívajú lokálne časovo-priestorové príznaky. Tieto pohybové príznaky následne trénujú pomocou SVM. 
+
+Na testovanie úspešnosti SVM využili viacero scenárov:
+
+\begin{itemize}
+\item \textbf{S1 - vonkajšie prostredie}
+\item \textbf{S2 - vonkajšie prostredie s variabilnou vzdialenosťou}
+\item \textbf{S3 - vonkajšie s rôznym oblečením}
+\item \textbf{S4 - vo vnútri}
+\end{itemize}
+
+\subsection{Výsledky}
+V práci majú reprezentované dva výsledky. Priemer výsledkov pre všetky štyri scenáre a pre scenár S2.
+
+\subsubsection{Všetky scenáre}
+
+Na obrázku \ref{cmp1} sú spriemerované výsledky všetkých scenárov. 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{img/cmpLFSVM.png}
+  \caption{Výsledky všetkých scenárov}
+  \label{cmp1}
+\end{figure}  
+
+Z výsledkov môžme usúdiť, že všetky kategórie im zaradilo s viac ako 50\%-tnou úspešnosťou. 
+Oproti nášmu riešeniu sa im podarilo lepšie vyhodnotiť pohyb behu o 42,4\%,  boxu o 35.4\%, chôdze o 8,8\% a pomalý beh o zanedbateľných 0.4\%.
+
+Naopak zhoršenie oproti nášmu výsledku sme zaznamenali pri pohybe potlesku - o 20,3\% a kývaniu oboma rukami o 11,4\%.
+
+Tieto výsledky pôsobia celkom slušne, vzhľadom na to, že neobsahujú vysokú chybu pri pohybe behu ako v našom riešení.
+
+
+\subsubsection{Scenár S2}
+V tomto teste testovali na jednom scenári vo vonkajšom prostredí. Výsledky sú na obrázku \ref{cmp2}. 
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=10cm]{img/cmpLFSVM2.png}
+  \caption{Výsledky scenára S2}
+  \label{cmp2}
+\end{figure}  
+
+V týchto výsledkoch môžme skonštatovať, že naše výsledky boli nižšie v pohyboch boxu o 34,7\%, pohybe behu o 4,2\% a pohybe chôdze o 25\%, kde sa im podarilo správne rozpoznať všetky testovacie videá.
+
+Na opačnej strane v našich výsledkoch sa nám viac darilo pri pochyboch tlieskania o 21,7\%, pohybe kývania o 15,6\%, pohybe pomalého behu o 26,7\%. 
+
+V oboch prípadoch sme zaznamenali vysoký podiel zamieňania pohybu behu s pomalým behom, respektíve chôdzou. Taktiež vysoké percento pomalého behu bolo zaregistrované ako chôdza či v našom, alebo ich riešení. 
+
+Zamieňanie týchto pohybov si môžme odôvodniť ich podobnosťou, keďže každá osoba beží, respektíve chodí inou rýchlosťou. To, čo je u niekoho pomalým behom je pre iného chôdzou. Týmito argumentami si zastávajú názor aj v porovnávanom riešení. 
+
+\subsubsection{Zhodnotenie výsledkov}
+Výsledky, ktoré sme dosiahli sú uspokojivé, vzhľadom na metódy, ktoré sme použili môžme prehlásiť, že sa nám podarilo vytvoriť klasifikátor, ktorý dokáže rozpoznať jednotlivé typy pohybov na základe ich časovo-priestorových vzťahov.
+
+Vidíme aj priestor na vylepšenie riešenia, ktoré by mohlo byť predmetom ďalšieho skúmania. 
+
+
+ 
+
+
+
+
+
+
 
 
 
