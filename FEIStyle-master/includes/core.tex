@@ -50,7 +50,6 @@ Na internete je veľké množstvo video databáz s rôznymi pohybmi objektov, ľ
 Výber databázy realizujeme na základe vlastností jednotlivých videí. Videá môžu byť snímané staticky z jedného miesta bez pohybu kamery, staticky s otáčaním kamery, taktiež dynamicky s rôznym pohybom a otáčaním kamery. Výber databázy bude najdôležitejšou súčasťou tejto práce, keďže od nej sa bude odvíjať celý ďalší postup.
 \subsubsection{Vlastnosti videa} Dôležitými vlastnosťami videí z databáz sú:
 \begin{itemize}
-\item \textbf{veľkosť}
 \item \textbf{rozlíšenie}
 \item \textbf{dĺžka}
 \item \textbf{počet videí}
@@ -58,8 +57,6 @@ Výber databázy realizujeme na základe vlastností jednotlivých videí. Vide�
 \item \textbf{formát videa}
 \item \textbf{počet objektov}
 \end{itemize}
-
-\textbf{Veľkosť} videa ovplyvňuje vo vysokej miere časový úsek určený na spracovanie videa. Z tohto dôvodu je vhodné hľadať databázy videí, ktorých videá majú menšiu veľkosť, čo priamo súvisí s ich rozlíšením, počtom snímkov za sekundu a dĺžkou. Nesmieme ale zabudnúť na to, že video musí byť zreteľné a pohyb detegovateľný.
 
 \textbf{Rozlíšenie} videa je dôležitým faktorom pre spracovnie z hľadiska kvality príznakov a snímkov. Zároveň jeho odporúčaná veľkosť sa líši od konkrétneho spôsobu extrakcie príznakov. Dôležité je, aby obraz konkrétnej aktivity na videu bol jasný a voľným okom rozpoznateľný.
 
@@ -71,7 +68,7 @@ Výber databázy realizujeme na základe vlastností jednotlivých videí. Vide�
 
 \textbf{Formát videa} súvisí s jeho veľkosťou, avšak formát je možné meniť a konvertovať na nami potrebný rozmer.
 
-\textbf{Počet objektov}, ktoré sa na videu pohybujú a vyhodnocujú vplýva na výkon a rýchlosť rozpoznávania. Tu taktiež nie je možné aplikovať niektoré metódy rozpoznávania.
+\textbf{Počet objektov}, ktoré sa na videu pohybujú a vyhodnocujú vplýva na rozhodovanie, akými metódami sa bude riešiť detekcia a rozpoznávanie.
 
 \subsubsection{Databázy ľudského pohybu}\label{dbludskeho}
 Pre potrebu rozpoznávania pohybu osoby existuje viacero databáz, ktoré sme v našej práci uvažovali a testovali:
@@ -102,19 +99,19 @@ Pre potrebu rozpoznávania pohybu osoby existuje viacero databáz, ktoré sme v 
 \subsection{Postup spracovania obrazu}
 Na získanie príznakov a potrebu klasifikácie pohybu analyzujeme a zvažujeme konkrétne spôsoby spracovania obrazu z videa. Pre tento účel berieme v úvahu algoritmus \acrfull{mhi} na extrakciu prvotných príznakov a následné spracovanie pomocou \acrfull{hog}. 
 
-Pre zosilnenie našich príznakov a zaručenie vyššej úspešnosti klasifikácie uvažujeme použitie \acrfull{pca}, ktoré taktiež urýchli trénovanie klasifikátora. Takto získané príznaky by sme následne vedeli natrénovať pomocou \acrfull{svm}. Z natrénovanej SVM vieme otestovať úspešnosť klasifikátora, ktorý sme získali a tým sa dostať ku výsledkom a porovnávaniam. 
+Pre zaistenie najvhodnejších príznakov a zaručenie vyššej úspešnosti klasifikácie uvažujeme použitie \acrfull{pca}, ktoré môže urýchliť trénovanie klasifikátora, ak sa počet dimenzií zredukuje. Takto získané príznaky by sme následne vedeli natrénovať pomocou \acrfull{svm}. Z natrénovanej SVM vieme otestovať úspešnosť klasifikátora, ktorý sme získali a tým sa dostať ku výsledkom a porovnávaniam. 
 
 \subsubsection{Motion History Image} \label{MHIlabel}
-\acrshort{mhi} je metódou, ktorá je založená na časovej šablóne. Je to jednoduchá metóda avšak robustná, vhodná na reprezentovanie a analýzu pohybu.\cite{c3}  Táto metóda bola prvýkrát popísaná v dokumente \textit{``An appearance-based representation of action''} od Aarona Bobicka a Jamesa W. Davisa.\cite{c2} Rozpoznávanie akcie pomocou MHI patrí do skupiny prispôsobovania šablóny. V MHI sa informácia pohybu v čase spája do jedného obrázku, kde intenzita pixelov je funkciou histórie pohybu na danej pozícii pixelu. MHI sa vypočítava pomocou aktualizačnej funkcie.\ref{MHIeq}
+\acrshort{mhi} je metódou, ktorá je založená na časovej šablóne. Je to jednoduchá metóda avšak robustná, vhodná na reprezentovanie a analýzu pohybu.\cite{c3}  Táto metóda bola prvýkrát popísaná v dokumente \textit{``An appearance-based representation of action''} od Aarona Bobicka a Jamesa W. Davisa.\cite{c2} Rozpoznávanie akcie pomocou MHI patrí do skupiny prispôsobovania šablóny. V MHI sa informácia pohybu v čase spája do jednej dátovej matice, kde intenzita pixelov je funkciou histórie pohybu na danej pozícii pixelu. MHI sa vypočítava pomocou aktualizačnej funkcie.\ref{MHIeq}
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=16cm]{img/MHIudacity.png}
-  \caption{Priebeh videa a tvorba MHI}
+  \caption{Priebeh videa a tvorba MEI \cite{c22}}
   \label{MHIuda}
 \end{figure}
 
-Z obrázku \ref{MHIuda} môžme jednoduchšie pochopiť akým spôsobom MHI pracuje. Jednotlivé snímky sú zoradené v čase akom boli nasnímané. V hornom riadku obrázkov vidíme neupravené snímky. Pod nimi je ekvivalent MHI obrázkov, ktoré sa kumulatívne spájali \textit{(Motion Energy Image}, teda nenesú informáciu o histórii daného pohybu, iba o tom, ktoré pixely sa menili a kde sa pohyb konal. 
+Na obrázku \ref{MHIuda} v spodnej časti môžme vidieť MEI \textit{(Motion Energy Image)}, čo je základom pre vytváranie MHI. Jednotlivé snímky sú zoradené v čase akom boli nasnímané. V hornom riadku obrázkov vidíme neupravené snímky. Obrázky MEI sa kumulatívne spájajú do jedného obrazu. Nenesú informáciu o histórii daného pohybu, iba o tom, ktoré pixely sa menili a kde sa pohyb konal. Pridaním tmavnutia pixelov je možné vytvoriť MHI z \acrshort{mei}.
 
 Z tohto riešenia je možné jednoducho odvodiť riešenie MHI, kde pri kumulovaní jednotlivých snímkov do jedného je uberaná intenzita všetkých pixelov v každej iterácii. Tento proces je zapísaný rovnicou na obrázku \ref{MHIeq}.
 
@@ -139,11 +136,11 @@ To nám umožňuje zaznamenať pohyb z videa do jediného obrázku, v ktorom je 
 Na obrázku \ref{MHIclap} je príklad spracovaného pohybu z videa do MHI, na ktorom môžme vidieť pohyb tela pri akcii tlieskania.
 
 \subsubsection{Histogram of Oriented Gradients} \label{HOGlabel}
-Deskriptor vlastností je forma reprezentácie obrazu alebo jeho časti, ktorá zjednodušuje obraz extrakciou dôležitých informácií. Tento deskriptor premieňa obraz na pole, resp. vektor vlastností, v ktorom sa nachádzajú informácie o obraze. Vyberá informácie o obraze, ktoré sú potrebné a tie nepotrebné preskočí. 
+Deskriptor vlastností je forma reprezentácie obrazu alebo jeho časti, ktorá zjednodušuje obraz extrakciou dôležitých informácií. Tento deskriptor premieňa obraz na pole, resp. vektor vlastností, v ktorom sa nachádzajú
 
-Tento deskriptor je užitočný  pre potreby detekcie a rozpoznávania obrazu, kde jeho vektor je vstupom pre klasifikačné algoritmy ako napríklad SVM. 
+Tento deskriptor je užitočný  pre potreby detekcie a rozpoznávania obrazu, kde jeho vektor môže byť vstupom pre klasifikačné algoritmy ako napríklad SVM. 
 
-HOG deskriptor (Histogram of oriented gradients) používa ako vektor príznakov rozdelenie smerov orientovaných gradientov. Tieto príznaky sú vešmi dobré na detekovanie hrán v obraze a poskytujú vhodné informácie o jeho vlastnostiach.
+HOG deskriptor (Histogram of oriented gradients) používa ako vektor príznakov rozdelenie smerov orientovaných gradientov. Tieto príznaky sú veľmi dobré na detekovanie hrán v obraze a poskytujú vhodné informácie o jeho vlastnostiach.
 
 \paragraph{Predpríprava a výpočet gradientu}
 
@@ -186,7 +183,7 @@ Obraz gradientu eliminuje nedôležité informácie v obraze, čo môžme demon�
 
 V tomto kroku môžme obraz rozdeliť do buniek o veľkosti  8 x 8 pixelov, pre ktoré bude histogram gradientov počítaný osobitne pre každú bunku.
 
-Výpočet po bunkách je dôležitým krokom na redukovanie objemu dát, pretože pre každý pixel v bunke máme dokopy\textit{ 8 pixelov x 8 pixelov x 3 kanály obrazu hodnôt }(192) a zároveň \textit{8 pixelov x 8 pixelov x 2 hodnoty (veľkosť a smer gradientu)} (128). Ukážeme si, že pomocou redukcie uhlov do 9tich smerových kategórií vieme týchto 128 hodnôt uložiť ako 9 hodnôt. Reprezentácia takýmto spôsobom je kompaktnejšia, zároveň je odolnejšia voči šumu v obraze. 
+Výpočet po bunkách je dôležitým krokom na redukovanie objemu dát, pretože pre každý pixel v bunke máme dokopy\textit{ 8x8x3 }(192) a zároveň \textit{8x8x2 (veľkosť a smer gradientu)} (128). Ukážeme si, že pomocou redukcie uhlov do 9tich smerových kategórií vieme týchto 128 hodnôt uložiť ako 9 hodnôt. Reprezentácia takýmto spôsobom je kompaktnejšia, zároveň je odolnejšia voči šumu v obraze. 
 
 Histogram gradientu je vlastne vektor deviatich smerových kategórií, ktoré zoskupuje podľa uhla, ktorý gradient má. 
 
@@ -491,14 +488,14 @@ Po naprogramovaní všetkých základných častí nášho projektu sme potrebov
 
 
 \subsubsection{t-SNE}
-Aby sme vedeli výsledok trénovania našej SVM, potrebovali sme výsledky vizualizovať, ako prebehlo rozdelenie do tried. Na to sme využili metódu založenú na redukcii dimenzií \textit{\acrfull{tsne}}, ktorej algoritmus nájdete v prílohe \ref{att:B}. Tento algoritmus umožňuje vizualizáciu viacrozmerných dát do 2D priestoru. Túto techniku je možné implementovať pomocou aproximácií, ktoré môžu byť aplikované na datasety obrovských rozmerov. Autorom tohto algoritmu je \textbf{\textit{Laurens van der Maaten}}, ktorý pôsobí ako výskumný pracovník na poli strojového učenia a počítačového videnia. t-SNE implementoval pre množstvo jazykov vrátane jazyka Python, takže sme nemali problém tento nástroj využívať. \cite{c18}
+Aby sme vedeli výsledok, ktorý ponúkajú nami vyextrahované príznaky, potrebovali sme výsledky vizualizovať, ako prebehlo rozdelenie do tried. Na to sme využili metódu založenú na redukcii dimenzií \textit{\acrfull{tsne}}, ktorej algoritmus nájdete v prílohe \ref{att:B}. V jazyku Python implementácia využíva na vizualizáciu dát knižnicu \textit{matplotlib}. Túto techniku je možné implementovať pomocou aproximácií, ktoré môžu byť aplikované na datasety obrovských rozmerov. Autorom tohto algoritmu je \textbf{\textit{Laurens van der Maaten}}, ktorý pôsobí ako výskumný pracovník na poli strojového učenia a počítačového videnia. t-SNE implementoval pre množstvo jazykov vrátane jazyka Python, takže sme nemali problém tento nástroj využívať. \cite{c18}
 
 
 
 \subsubsection{Prvotné testy}
 Ako prvý krok sme zvolili testovanie a tréning dvoch množín a teda beh a boxovanie. SVM sme natrénovali na tridsiatich videách z triedy behu a tridsiatich videách z triedy boxovania. 
 
-Výsledok trénovania bol pre nás dobrý, keďže už vizuálne bolo vidno rozdelenie týchto pohybov do dvoch tried. Výsledok je možné vidieť na obrázku \ref{Test2Class}. 
+Výsledok trénovania bol pre nás dobrý, keďže už vizuálne  na extrahovaných dátach bolo vidno rozdelenie týchto pohybov do dvoch tried. Výsledok je možné vidieť na obrázku \ref{Test2Class}. 
 
 \begin{figure}[H]
   \centering
@@ -510,7 +507,7 @@ Výsledok trénovania bol pre nás dobrý, keďže už vizuálne bolo vidno rozd
 
 Ako príklad uvedieme taktiež pokus trénovania s jedným MHI, ktorý bol vytvorený vo 4. sekunde priebehu pohybu, avšak bez získania prídavných príznakov \ref{pridavny} a využitia metódy PCA.  Do tohto testu sme zapojili 5 tried pohybov, teda dataset KTH bez triedy pomalého behu, keďže sme usudzovali, že táto trieda sa dosť prelína medzi triedami behu a chôdze, čo sa ukáže aj na ďalších výsledkoch. 
 
-Takto natrénované SVM sme znovu podrobili testu \textit{t-SNE}, kde výstup vyzeral ako na obrázku \ref{Test5Class1}, výsledky síce dávali zmysel, avšak rozdelenie jednotlivých tried nebolo až tak prehľadné ako sme si predstavovali. Triedy behu a chôdze pôsobia veľmi chaoticky, tak ako aj boxovanie s tlieskaním a zasahovaním kývania.
+Vyextrahované dáta, teda vektor príznakov a vektor tried sme znovu podrobili testu \textit{t-SNE}, kde výstup vyzeral ako na obrázku \ref{Test5Class1}, výsledky síce dávali zmysel, avšak rozdelenie jednotlivých tried nebolo až tak prehľadné ako sme si predstavovali. Triedy behu a chôdze pôsobia veľmi chaoticky, tak ako aj boxovanie s tlieskaním a zasahovaním kývania.
 
 \begin{figure}[H]
   \centering
@@ -534,103 +531,103 @@ Z tohto dôvodu sme sa rozhodli analyzovať náš postup a pristúpiť k optimal
 
 \subsubsection{Rozdelenie dát a finálne testy}
 Dáta na tréning a testovanie sme rozdelili do dvoch skupín v pomere 40 testovacích videí a 40 trénovacích videí. Všetky testy boli vykonané na rovnakých videách, takže výsledky úspešnosti sú objektívne a porovnateľné pre každý typ konfigurácie programu.
-Konfigurácie sme menili na 9 rôznych nastavení pre všetky triedy pohybov databázy KTH viď obrázok \ref{tabTesty}.
+Konfigurácie sme menili na 9 rôznych nastavení, pre ktoré sme natrénovali SVM a testovali ich úspešnosť pre všetky triedy pohybov databázy KTH viď obrázok \ref{tabTesty}.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/tabTesty.png}
-  \caption{Testovacie konfigurácie}
+  \caption{Konfigurácia trénovania a testovania}
   \label{tabTesty}
 \end{figure} 
 
-Ako vidno na obrázku, zvolili sme obmeny počtu MHI obrázkov s násobnými počtami vektorov pre získanie hlavných komponentov ako aj počet prídavných príznakov vypočítavaných z MHI. 
+Ako vidno na obrázku, zvolili sme obmeny počtu MHI obrázkov s násobnými počtami vektorov pre získanie hlavných komponentov ako aj počet prídavných príznakov vypočítavaných z MHI. Stĺkec s názvom \textit{Počet MHI} udáva, koľko MHI obrázkov sme extrahovali z jedného videa, \textit{Počet PCA} udáva koľkonásobne rozšírený vektor sme spracovávali v PCA. \textit{Prídavné príznaky} označujú, z koľkých MHI obrázkov sme extrahovali dodatočné príznaky. \textit{Počet príznakov} určuje celkový počet extrahovaných príznakov na jedno video. 
 
-\paragraph{1. Test} 
+\paragraph{1. Kofigurácia} 
 V prvom teste s konfiguráciou jedného obrázku MHI, bez výpočtu PCA a prídavných príznakov sme dostali prvé výsledky \ref{test1}.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6classes1g.png}
-  \caption{Test č. 1}
+  \caption{Úspešnposť kofigurácie č. 1}
   \label{test1}
 \end{figure} 
 
 Z výsledkov je viditeľný problém medzi triedou \textit{Running} a \textit{Jogging}, kde zo všetkých testovaných videí behu vyhodnotilo až 40\% ako pomalý beh a 35\% chôdze vyhodnotilo ako pomalý beh. 
 
 
-\paragraph{2. Test} 
+\paragraph{2. Kofigurácia} 
 V druhom teste sme pridali ďalšie príznaky do vektora, výsledky pohybov sa zlepšili až na triedy behu, kde bol prepad až na úspešnosť 7,5\% a triedy behu, kde sa tiež znížila úspešnosť. Porovnanie je na obrázku \ref{test2}.
 
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6classes11g.png}
-  \caption{Test č. 2}
+  \caption{Úspešnposť kofigurácie č. 2}
   \label{test2}
 \end{figure} 
 
-\paragraph{3. Test} 
+\paragraph{3. Kofigurácia} 
 V tomto teste sme sa rozhodli zistiť vplyv PCA na celkové riešenie problému. Výsledky ukázali všeobecné zlepšenie, hlavne v triede mávania rukami, kde sa úspešnosť zvýšila z 55\% na 72.5\%.  
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6classes11PCA1g.png}
-  \caption{Test č. 3}
+  \caption{Úspešnposť kofigurácie č. 3}
   \label{test3}
 \end{figure} 
 
 
-\paragraph{4. Test} 
+\paragraph{4. Kofigurácia} 
 V nasledujúcich testoch nás zaujímal vplyv trojnásobného použitia obrázkov MHI na výsledky a úspešnosť testovania v spolupráci s rozširovaním PCA. Použili sme MHI z prvých 4, 6 a 9 sekúnd videa. Objavilo sa nepatrné zlepšenie až na prepad úspešnosti triedy \textit{Jogging}, v ktorom úspešnoť od predchádzajúceho testu klesla o 17,5\%. Finálny počet príznakov na jeden vektor bol 240.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6PCA1g.png}
-  \caption{Test č. 4}
+  \caption{Úspešnposť kofiguráciet č. 4}
   \label{test4}
 \end{figure} 
 
-\paragraph{5. Test} 
+\paragraph{5. Kofigurácia} 
 V nasledujúcom teste sme iba zdvojnásobili počet vektorov príznakov videí (480 príznakov na video), aby sme mohli pomocou PCA vypočítať dvojnásobný počet príznakov ako v predchádzajúcom teste. Z výsledkov nám vyplynulo, že tento postup rozširovania počtu vektorov sa nám môže vyplatiť, keďže sa nám výsledky nezhoršili a v triede \textit{Waving} sme dokonca dostalo výsledok lepší o 2,5\%. 
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6PCA2g.png}
-  \caption{Test č. 5}
+  \caption{Úspešnposť kofigurácie č. 5}
   \label{test5}
 \end{figure} 
 
-\paragraph{6. Test} 
+\paragraph{6. Kofigurácia} 
 Test so štvornásobne zvýšeným počtom vektorov (960 príznakov na video) nám znovu priniesol zlepšenie v triede \textit{Waving} a to dokonca o celých 5\%. Vzhľadom na to, že sa nám výsledky stále zlepšovali, snažili sme sa ísť ešte ďalej.
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6PCA4g.png}
-  \caption{Test č. 6}
+  \caption{Úspešnposť kofigurácie č. 6}
   \label{test6}
 \end{figure} 
 
-\paragraph{7. Test} 
+\paragraph{7. Kofigurácia} 
 Siedmy test s osemnásobným zväčšením počtu vektorov (1920 príznakov na video) nám znovu vylepšil výsledky o 2,5\% pre triedy \textit{Clapping} a \textit{Waving}. Stále to nemalo žiaden negatívny vplyv na ostatné výsledky.
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6PCA8g.png}
-  \caption{Test č. 7}
+  \caption{Úspešnposť kofigurácie č. 7}
   \label{test7}
 \end{figure} 
 
-\paragraph{8. Test}
+\paragraph{8. Kofigurácia}
 Pri teste, kde sme zvolili 12-násobné rozšírenie (2880 príznakov na video) počtu vektorov sa nám už zlepšovanie výsledkov zastavilo. Pri testoch sme namerali identické hodnoty, čo nám naznačovalo, že ďalšie zvyšovanie počtu vektorov nám už nebude naše výsledky vylepšovať. Týmto by sme mohli konfiguráciu, ktorá bola nastavená v tomto teste, respektíve v teste predchádzajúcom, považovať za najvhodnejšie zvolenú a porovnať ju s inými riešeniami.
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6PCA12g.png}
-  \caption{Test č. 8}
+  \caption{Úspešnposť kofigurácie č. 8}
   \label{test8}
 \end{figure}  
 
-\paragraph{9. Test} 
+\paragraph{9. Kofigurácia} 
 Ako sme sa predpokladali, výsledky pri 16-násobnom rozšírení (3840 príznakov na video) sa vôbec nezlepšili, naopak, v triede \textit{Jogging} sme zaznamenali pokles o 2,5\% z úspešnosti. 
 \begin{figure}[H]
   \centering
   \includegraphics[width=14cm]{img/test6PCA16g.png}
-  \caption{Test č. 9}
+  \caption{Úspešnposť kofigurácie č. 9}
   \label{test9}
 \end{figure} 
 

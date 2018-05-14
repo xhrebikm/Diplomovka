@@ -3,6 +3,6 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {lstlisting}{\numberline {2}Tr\IeC {\'e}novanie klasifik\IeC {\'a}tora}{27}{lstlisting.69}
 \defcounter {refsection}{0}\relax 
-\contentsline {lstlisting}{\numberline {B.1}Test TSNE}{III}{lstlisting.115}
+\contentsline {lstlisting}{\numberline {B.1}Test TSNE}{IV}{lstlisting.115}
 \defcounter {refsection}{0}\relax 
-\contentsline {lstlisting}{\numberline {B.2}Algoritmus z\IeC {\'\i }skania pr\IeC {\'\i }davn\IeC {\'y}ch pr\IeC {\'\i }znakov}{IV}{lstlisting.171}
+\contentsline {lstlisting}{\numberline {B.2}Algoritmus z\IeC {\'\i }skania pr\IeC {\'\i }davn\IeC {\'y}ch pr\IeC {\'\i }znakov}{V}{lstlisting.171}
